@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Agent-Class: io.github.kits.agent.DynamicAgent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
+Class-Path: javassist-3.24.0-GA.jar
+Created-By: Apache Maven 3.5.4
