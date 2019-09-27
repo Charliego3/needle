@@ -22,7 +22,7 @@ public class HttpFilterAdapter {
 
 	private              HttpRequest     request;
 	private              HttpResponse    response;
-	private static final Set<HttpFilter> filterList = new TreeSet<>(Consts.orderCompar());
+	private static final Set<HttpFilter> filterList = new TreeSet<>(Consts.orderComparator());
 
 	public HttpFilterAdapter() {}
 

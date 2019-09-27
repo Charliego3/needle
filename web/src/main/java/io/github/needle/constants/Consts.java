@@ -1,5 +1,6 @@
 package io.github.needle.constants;
 
+import io.github.kits.PropertiesKit;
 import io.github.needle.annotations.Order;
 
 import java.util.Comparator;
@@ -14,7 +15,7 @@ public interface Consts {
 
 	String DEFAULT_HOST        = "0.0.0.0";
 	int    DEFAULT_PORT        = 9000;
-	String DEFAULT_SERVER_NAME = "WINTER";
+	String DEFAULT_SERVER_NAME = PropertiesKit.getString("server.name").orElse("NEEDLE");
 	String CRLF                = "\r\n";
 
 	interface PropArgs {
@@ -51,7 +52,7 @@ public interface Consts {
 		String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 	}
 
-	static <T> Comparator<T> orderCompar() {
+	static <T> Comparator<T> orderComparator() {
 		return (f1, f2) -> {
 			Order o1 = f1.getClass().getAnnotation(Order.class);
 			Order o2 = f2.getClass().getAnnotation(Order.class);

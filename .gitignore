@@ -26,5 +26,3 @@ hs_err_pid*
 *.iml
 **/target
 **/dependency-reduced-pom.xml
-
-banner.txt

@@ -20,7 +20,7 @@ import java.util.TreeSet;
  */
 public class ServeContext {
 
-	private static final Set<Serve> serveList = new TreeSet<>(Consts.orderCompar());
+	private static final Set<Serve> serveList = new TreeSet<>(Consts.orderComparator());
 
 	public void registerServe(String classpath) throws IOException, ReflectiveOperationException {
 		List<Class> serves = Envs.getDirClass(new File(classpath), Serve.class);
