@@ -41,6 +41,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <javassist.version>3.24.0-GA</javassist.version>
+        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <junit.version>4.12</junit.version>
     </properties>
 
@@ -182,6 +183,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <version>${maven.release.plugin.version}</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
