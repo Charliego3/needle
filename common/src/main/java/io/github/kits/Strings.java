@@ -1,6 +1,5 @@
 package io.github.kits;
 
-import com.sun.xml.internal.bind.api.TypeReference;
 import io.github.kits.cache.PatternCache;
 import io.github.kits.json.tokenizer.CharReader;
 import io.github.kits.log.Logger;
