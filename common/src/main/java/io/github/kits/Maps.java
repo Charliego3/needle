@@ -79,7 +79,7 @@ public class Maps {
      * @param objs String
      * @return Map
      */
-    public static Map asMap(String... objs) {
+    public static Map asMap(Object... objs) {
         Map<Object, Object> map = new LinkedHashMap<>();
         for(int i = 1; i < objs.length; i += 2) {
             map.put(objs[i - 1], objs[i]);
