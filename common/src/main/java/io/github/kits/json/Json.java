@@ -1,6 +1,7 @@
 package io.github.kits.json;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 自定义Json解析工具类
@@ -27,6 +28,10 @@ public class Json {
 
 	public static <T> T jsonPath(String json, String path, Class<T> targetClass) {
 		return new JsonDecoder<T>().jsonPath(json, path, targetClass);
+	}
+
+	public static Map jsonPath(String json, String path) {
+		return new JsonDecoder<Map>().jsonPath(json, path, Map.class);
 	}
 
 	public static String toJson(Object object) {
