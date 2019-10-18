@@ -14,24 +14,20 @@ public class Json {
 
 	private static JsonSupport jsonEncoder = JsonEncoder.newInstance();
 
-	public static <T> void setJsonEncoder(JsonEncoder encoder) {
-		jsonEncoder = encoder;
+	public static <T> T toObject(String json, Class<T> target) {
+		return new JsonDecoder<T>().toObject(json, target);
 	}
 
-	public static <T> T toObject(String json, Class<T> targetClass) {
-		return new JsonDecoder<T>().toObject(json, targetClass);
+	public static <T> List<T> toList(String json, Class<T> target) {
+		return new JsonDecoder<T>().toList(json, target);
 	}
 
-	public static <T> List<T> toList(String json, Class<T> targetClass) {
-		return new JsonDecoder<T>().toList(json, targetClass);
+	public static <T> T jsonPath(String json, String path, Class<T> target) {
+		return new JsonDecoder<T>().jsonPath(json, path, target);
 	}
 
-	public static <T> T jsonPath(String json, String path, Class<T> targetClass) {
-		return new JsonDecoder<T>().jsonPath(json, path, targetClass);
-	}
-
-	public static Map jsonPath(String json, String path) {
-		return new JsonDecoder<Map>().jsonPath(json, path, Map.class);
+	public static JsonPath jsonPath(String json) {
+		return new JsonDecoder<>().jsonPath(json);
 	}
 
 	public static String toJson(Object object) {

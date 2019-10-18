@@ -5,10 +5,16 @@ import io.github.kits.enums.FunctionType;
 import io.github.kits.exception.TypeException;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 
 import static io.github.kits.enums.FunctionType.ARRAY;
 import static io.github.kits.enums.FunctionType.BASIC;
@@ -30,17 +36,6 @@ import static io.github.kits.enums.FunctionType.SYSTEM;
  * @since 1.0.0
  */
 public class Types {
-
-	public static <T> boolean isNumber(T object) {
-		if (Objects.isNull(object)) {
-			return false;
-		}
-//		if (object instanceof Number && !(object instanceof Byte)) {
-//			return true;
-//		}
-		return object instanceof Number && !(object instanceof Byte);
-//		return Strings.isNumber(object.toString(), true);
-	}
 
 	public static <T, R> R function(T object, TypeFunctionConfig<T, R> config) {
 		if (Objects.isNull(object)) {
@@ -83,9 +78,50 @@ public class Types {
 						   .orElse(null);
 	}
 
-	public static <T> Number castToNumber(T number) {
-		Assert.isTrue(!isNumber(number), "");
-		return null;
+	public static <T, R> R type(Object object, Class<R> target) {
+		if (Objects.isNull(target)) {
+			throw new TypeException("Target class is null!");
+		}
+		R r = null;
+		if (Collection.class.isAssignableFrom(target)) {
+			if (object instanceof List || object instanceof Set) {
+				return (R) object;
+			}
+			if (List.class.isAssignableFrom(target)) {
+				ArrayList<Object> objects = new ArrayList<>();
+				objects.add(object);
+				return (R) objects;
+			} else if (Set.class.isAssignableFrom(target)) {
+				HashSet<Object> objects = new HashSet<>();
+				objects.add(object);
+				return (R) objects;
+			}
+		} else if (Map.class.isAssignableFrom(target)) {
+
+		} else if (Date.class.isAssignableFrom(target)) {
+
+		} else if (BigDecimal.class.isAssignableFrom(target)) {
+
+		} else if (target.isArray()) {
+
+		} else if (Class.class.isAssignableFrom(target)) {
+
+		} else if (Boolean.class.isAssignableFrom(target)) {
+
+		} else if (Number.class.isAssignableFrom(target) && !(Byte.class.isAssignableFrom(target))) {
+
+		} else if (Envs.isBasicType(target)) {
+
+		} else if (Envs.isSystemType(target)) {
+
+		} else if (Enum.class.isAssignableFrom(target)) {
+
+		} else if (CharSequence.class.isAssignableFrom(target) || Character.class.isAssignableFrom(target)) {
+
+		} else {
+
+		}
+		return r;
 	}
 
 }

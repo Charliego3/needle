@@ -5,18 +5,17 @@ import io.github.kits.Envs;
 import io.github.kits.Strings;
 import io.github.kits.exception.JsonParseException;
 import io.github.kits.json.Json;
+import io.github.kits.json.JsonList;
+import io.github.kits.json.JsonPath;
+import io.github.kits.json.JsonKind;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
+import static io.github.kits.json.tokenizer.JsonTokenKind.BACKSLASH;
 import static io.github.kits.json.tokenizer.JsonTokenKind.COLON;
 import static io.github.kits.json.tokenizer.JsonTokenKind.COMMA;
 import static io.github.kits.json.tokenizer.JsonTokenKind.DOUBLE_QUOTE;
@@ -49,8 +48,6 @@ public class JsonTokenizer implements Serializable {
 
 	private static final long serialVersionUID = -2019857734532143284L;
 	private CharReader        charReader;
-	private boolean           isAllValue;
-	private String[]          paths;
 	private boolean           isValue = false;
 	private Object[]          kv = new Object[2];
 	private Object            value = null;
@@ -62,62 +59,25 @@ public class JsonTokenizer implements Serializable {
 		return new JsonTokenizer();
 	}
 
-	public Object tokenize(String json) throws IOException {
-		return tokenize(json, "/");
-	}
-
-	public Object tokenize(String json, String path) throws IOException {
+	public JsonKind tokenize(String json) throws IOException {
 		Assert.isTrue(Json.isJson(json), new JsonParseException("Json String is invalid! Json: " + json));
 		if (Strings.isNullString(json)) {
 			return null;
 		}
 
-		if (Strings.isBlack(path) || Arrays.asList(".", "/").contains(path)) {
-			isAllValue = true;
-		} else {
-			Assert.isTrue(Json.isJsonObject(json), new JsonParseException("Json Array does not support path acquisition! Json: " + json));
-			if (path.startsWith(".") || path.startsWith("/")) {
-				path = path.substring(1);
-			}
-			paths = path.split("[./]");
-		}
-
 		json = readJsonWithoutComment(json, false);
 		this.charReader = new CharReader(json);
 
-		Object tokenize = jsonTokenize(Json.isJsonObject(json));
-		if (!isAllValue) {
-			if (tokenize instanceof List) {
-				return null;
-			}
-			return getPathValue(tokenize);
-		}
-		return tokenize;
+		return jsonTokenize(Json.isJsonObject(json));
 	}
 
-	private Object getPathValue(Object token) {
-		for (int i = 0; i < paths.length; i++) {
-			if (Objects.nonNull(token)) {
-				if (token instanceof Map) {
-					token = ((Map) token).get(paths[i]);
-				}
-			} else {
-				return null;
-			}
-			if (i == paths.length - 1) {
-				return token;
-			}
-		}
-		return null;
-	}
-
-	private Object jsonTokenize(boolean isJsonObject) throws IOException {
-		Map<Object, Object> map = null;
-		List<Object> list = null;
+	private JsonKind jsonTokenize(boolean isJsonObject) throws IOException {
+		JsonPath jsonPath  = null;
+		JsonList<Object> jsonList = null;
 		if (isJsonObject) {
-			map = new HashMap<>();
+			jsonPath = JsonPath.newInstance();
 		} else {
-			list = new ArrayList<>();
+			jsonList = new JsonList<>();
 		}
 
 		while (this.charReader.hasMore()) {
@@ -145,7 +105,7 @@ public class JsonTokenizer implements Serializable {
 				case RIGHT_BIG_PARANTHESES:
 				case RIGHT_BRACKET: {
 					if (Envs.isNotNullEmptyBlack(kv[0]) && isJsonObject) {
-						map.put(kv[0], kv[1]);
+						jsonPath.put(kv[0], kv[1]);
 						value = kv[0] = kv[1] = null;
 					}
 					continue;
@@ -161,7 +121,7 @@ public class JsonTokenizer implements Serializable {
 				case COMMA: {
 					isValue = false;
 					if (Envs.isNotNullEmptyBlack(kv[0]) && isJsonObject) {
-						map.put(kv[0], kv[1]);
+						jsonPath.put(kv[0], kv[1]);
 						value = kv[0] = kv[1] = null;
 					}
 					continue;
@@ -203,14 +163,14 @@ public class JsonTokenizer implements Serializable {
 					}
 				}
 			} else {
-				list.add(value);
+				jsonList.add(value);
 			}
 		}
 
 		if (isJsonObject) {
-			return map;
+			return jsonPath;
 		} else {
-			return list;
+			return jsonList;
 		}
 	}
 
@@ -222,38 +182,38 @@ public class JsonTokenizer implements Serializable {
 		return subJson(LEFT_BIG_PARANTHESES);
 	}
 
-	private String subJson(byte parantheses) throws IOException {
-		int leftParanthesesCount = 1, rightParanthesesCount = 0;
+	private String subJson(byte parentheses) throws IOException {
+		int leftParenthesesCount = 1, rightParenthesesCount = 0;
 		boolean isString = false;
 		StringBuilder json = new StringBuilder();
-		byte rightParantheses = RIGHT_BIG_PARANTHESES;
-		if (parantheses == LEFT_BRACKET) {
-			rightParantheses = RIGHT_BRACKET;
+		byte rightParentheses = RIGHT_BIG_PARANTHESES;
+		if (parentheses == LEFT_BRACKET) {
+			rightParentheses = RIGHT_BRACKET;
 		}
 		while (this.charReader.hasMore()) {
 			char next = this.charReader.next();
-			if (next == DOUBLE_QUOTE && this.charReader.peek(2) != '\\') {
+			if (next == DOUBLE_QUOTE && this.charReader.peek(2) != BACKSLASH) {
 				isString = !isString;
 			}
-			if (next == '\\' && (this.charReader.peek(2) == '\\' || this.charReader.prep() == '\\')) {
-				json.append("\\");
+			if (next == BACKSLASH && (this.charReader.peek(2) == BACKSLASH || this.charReader.prep() == BACKSLASH)) {
+				json.append(BACKSLASH);
 				this.charReader.next();
 			} else {
 				json.append(next);
 			}
 			if (!isString) {
-				if (next == parantheses) {
-					leftParanthesesCount++;
+				if (next == parentheses) {
+					leftParenthesesCount++;
 				}
-				if (next == rightParantheses) {
-					if (leftParanthesesCount == ++rightParanthesesCount) {
+				if (next == rightParentheses) {
+					if (leftParenthesesCount == ++rightParenthesesCount) {
 						break;
 					}
 				}
 			}
 		}
 		if (json.length() > 0) {
-			json.insert(0, (char) parantheses);
+			json.insert(0, (char) parentheses);
 		}
 		return json.toString();
 	}
@@ -263,45 +223,6 @@ public class JsonTokenizer implements Serializable {
 			return (byte) (this.charReader.next() & 0xFF);
 		}
 		return -1;
-	}
-
-	public static void main(String[] args) throws IOException {
-//		Map<String, String> map = new HashMap<String, String>() {{
-//			put("key1", "value1");
-//			put("key2", "value2");
-//			put("key3", "value3");
-//			put("key4", "value4");
-//			put("key5", "value5");
-//		}};
-//
-//		String json = Json.toJson(map, true);
-		String json = "		// sdfkhksjfkj\r" +
-						  "/** json\n \t\t * sfdsfdfds \n\t\t */\n  //sdfsdfsdfdsf\n" +
-						  "{\n\t/** \n\t * hahhahahha \n\t */\n" +
-						  "\t\"key1\": \"value1\",\n" +
-						  "\t\"key2\": /** \n" +
-						  "\t * zhushi \n" +
-						  "\t */\"value2\" , \n" +
-						  "\t\"key5\": \"val,   ,  ue5\",\n" +
-						  "// comment\n" +
-						  "\t\"key3\": \"value3\",\n" +
-						  "\t\"key4\": \"value4\"\n" +
-						  "}";
-
-		json = "{\n \"bbb\": [\"a , \\\" : [ ] \", \"b   :{ ]  \", \"c  : { }   \"], \"datas\": {\n  \"merchantInfo\": {\n   \"authFailReason\": null,\n   \"autoCancelQuota\": 1000000.00000,\n   \"canTrade\": true,\n   \"closeFailReason\": \"\",\n   \"closeStatus\": 0,\n   \"closeStatusName\": \"初始    {   }   状态\",\n   \"currentCancelTimes\": 0,\n   \"currentTimestamp\": 0,\n   \"hasAdvancedAuthen\": true,\n   \"hasAuthen\": true,\n   \"hasEmailAuthen\": true,\n   \"hasMobileAuthen\": true,\n   \"hasSetContact\": false,\n   \"hasSetPay\": false,\n   \"hasVideoAuthen\": false,\n   \"headUrl\": \"http://zb-testw.   [  ]   oss-cn-     :   shenzh     en.ali    yuncs.com/user/head-pic/4e2d9852-bec5-41b6-90c1-24d199a738e0.png?OSSAccessKeyId=LTAIuKoIx0jeiW4p&Expires=1569367582&Signature=XGtVTh1NTixkBmU%2F27Qjr4sdi1M%3D\",\n   \"id\": 1028073,\n   \"last24hAnswerRate\": 1.00000,\n   \"last24hAnswerRatio\": \"100%\",\n   \"last24hAnswerTimes\": 0,\n   \"last24hRefuseTimes\": 0,\n   \"last24hTimeoutTimes\": 0,\n   \"last30dAppealTimes\": 0,\n   \"last30dFailTradeTimes\": 0,\n   \"last30dTradeRatio\": \"0%\",\n   \"last30dTradeTimes\": 0,\n   \"last30dWinOverTimes\": 0,\n   \"mobileNo\": \"+86 15200000000\",\n   \"nickName\": \"nickname\",\n   \"openRemarkCode\": true,\n   \"orderReceive\": false,\n   \"priceProtectType\": 0,\n   \"realName\": \"whimthen\",\n   \"registerTime\": 1560853303369,\n   \"status\": 0,\n   \"statusName\": \"初始状态\",\n   \"stopAcceptOrder\": false,\n   \"totalAppealTimes\": 0,\n   \"totalCancelTimes\": 0,\n   \"totalTradeTimes\": 0,\n   \"totalWinOverTimes\": 0,\n   \"type\": 1,\n   \"typeName\": \"普通用户\",\n   \"userId\": 359810,\n   \"userName\": \"whimthen@gmail.com\",\n   \"videoHint\": false\n  , \"number\": 234234324     }\n },\n \"resMsg\": {\n  \"code\": 1000,\n  \"method\": \"getMerchantInfo\",\n  \"message\": \"操作成功。\"\n }\n}";
-
-//		json = "{\"datas\":{\"totalAsset\":\"8729000000000.00000000\",\"balances\":[{\"total\":\"1000000000000.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"15\",\"available\":\"1000000000000.00000000\",\"key\":\"QC\",\"unitDecimal\":\"8\"},{\"total\":\"1000000000000.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"13\",\"available\":\"1000000000000.00000000\",\"key\":\"USDT\",\"unitDecimal\":\"8\"},{\"total\":\"0.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"51\",\"available\":\"0.00000000\",\"key\":\"ZB\",\"unitDecimal\":\"8\"},{\"total\":\"0.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"2\",\"available\":\"0.00000000\",\"key\":\"BTC\",\"unitDecimal\":\"8\"},{\"total\":\"0.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"5\",\"available\":\"0.00000000\",\"key\":\"ETH\",\"unitDecimal\":\"8\"}]},\"resMsg\":{\"code\":1000,\"method\":\"getFundAsset\",\"message\":\"操作成功。\"}}";
-
-//		json = "[{\"total\":\"1000000000000.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"15\",\"available\":\"1000000000000.00000000\",\"key\":\"QC\",\"unitDecimal\":\"8\"},{\"total\":\"1000000000000.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"13\",\"available\":\"1000000000000.00000000\",\"key\":\"USDT\",\"unitDecimal\":\"8\"},{\"total\":\"0.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"51\",\"available\":\"0.00000000\",\"key\":\"ZB\",\"unitDecimal\":\"8\"},{\"total\":\"0.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"2\",\"available\":\"0.00000000\",\"key\":\"BTC\",\"unitDecimal\":\"8\"},{\"total\":\"0.00000000\",\"freeze\":\"0.00000000\",\"fundsType\":\"5\",\"available\":\"0.00000000\",\"key\":\"ETH\",\"unitDecimal\":\"8\"}]";
-
-//		json = "  [\"total\", \"free  ] ze\", \"fundsType\"  ]   ";
-
-//		System.out.println(json);
-		System.out.println("PrettyJson: \n" + Json.prettyJson(json));
-		JsonTokenizer jsonTokenizer = new JsonTokenizer();
-		System.out.println("\nJsonTokenizer.readJsonWithoutComment: " + jsonTokenizer.readJsonWithoutComment(json, false));
-		Object tokenize = jsonTokenizer.tokenize(json, "/datas/merchantInfo/headUrl");
-		System.out.println("\nJsonTokenizer.tokenize: " + tokenize);
 	}
 
 	/**

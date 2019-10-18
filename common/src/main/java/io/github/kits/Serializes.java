@@ -1,6 +1,7 @@
 package io.github.kits;
 
 import io.github.kits.json.Json;
+import io.github.kits.json.JsonPath;
 import io.github.kits.log.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -101,9 +102,10 @@ public class Serializes {
 
 	public static <T> T jsonUnSerialize(byte[] bytes) {
 		try {
-			Map map = Json.jsonPath(new String(bytes), "/");
-			return (T) Json.toObject(map.get(JSON_SERIALIZE_VALUE).toString(),
-				Class.forName(map.get(JSON_SERIALIZE_TYPE).toString()));
+			JsonPath jsonPath = Json.jsonPath(new String(bytes));
+//			return (T) Json.toObject(map.get(JSON_SERIALIZE_VALUE).toString(),
+//				Class.forName(map.get(JSON_SERIALIZE_TYPE).toString()));
+			return null;
 		} catch (Exception e) {
 			Logger.error("Json UnSerialize error", e);
 			return null;

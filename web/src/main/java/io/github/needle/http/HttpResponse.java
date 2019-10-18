@@ -41,7 +41,9 @@ public class HttpResponse extends HttpProtocol {
 
 	public void initHeader(HttpContentType contentType) {
 		String serverVersion = ServeConfig.getInstance().getServerVersion();
-		serverVersion = serverVersion.substring(0, serverVersion.indexOf("-"));
+		if (serverVersion.contains("-")) {
+			serverVersion = serverVersion.substring(0, serverVersion.indexOf("-"));
+		}
 		this.header.put("Server", "Winter " + (Strings.isNullOrEmpty(serverVersion) ? "" : serverVersion));
 		this.header.put("Date", DateTimes.nowGMT());
 		setContentType(contentType);

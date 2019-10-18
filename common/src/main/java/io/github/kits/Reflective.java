@@ -92,7 +92,7 @@ public class Reflective {
 	 * Initialize the object according to the constructor reflection
 	 * Constructor minimum parameter principle
 	 *
-	 * @param targetClass 目标对象类型
+	 * @param target 目标对象类型
 	 *                    Target object type
 	 * @return 初始化的对象
 	 * Initialized object
@@ -101,20 +101,20 @@ public class Reflective {
 	 * @throws InstantiationException 实例化异常
 	 * @throws InvocationTargetException 调用目标异常
 	 */
-	public static <T> T instance(Class<T> targetClass) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-		if (Envs.isBasicType(targetClass) || Envs.isSystemType(targetClass))
-			if (targetClass.isInterface()) {
-				if (List.class.isAssignableFrom(targetClass))
+	public static <T> T instance(Class<T> target) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+		if (Envs.isBasicType(target) || Envs.isSystemType(target))
+			if (target.isInterface()) {
+				if (List.class.isAssignableFrom(target))
 					return (T) new ArrayList();
-				else if (Map.class.isAssignableFrom(targetClass))
+				else if (Map.class.isAssignableFrom(target))
 					return (T) new HashMap();
 			} else
-				return targetClass.newInstance();
+				return target.newInstance();
 
-		Constructor<T> constructor = Arrays.stream((Constructor<T>[]) targetClass.getDeclaredConstructors())
+		Constructor<T> constructor = Arrays.stream((Constructor<T>[]) target.getDeclaredConstructors())
 										   .min(Comparator.comparingInt(v -> v.getParameterTypes().length))
 										   .orElseThrow(() -> {
-											   return new JsonParseException("No Constructor, Class: " + targetClass.getName());
+											   return new JsonParseException("No Constructor, Class: " + target.getName());
 										   });
 
 		Class<?>[] parameterTypes = constructor.getParameterTypes();

@@ -16,7 +16,6 @@ import io.github.kits.json.annotations.JsonCamelCase;
 import io.github.kits.json.annotations.JsonSerializeName;
 import io.github.kits.json.annotations.NoneSerializeNull;
 import io.github.kits.json.tokenizer.CharReader;
-import io.github.kits.json.tokenizer.JsonTokenType;
 import io.github.kits.json.tokenizer.JsonTokenizer;
 
 import java.lang.reflect.Array;
@@ -28,15 +27,15 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.kits.json.tokenizer.JsonTokenType.BEGIN_ARRAY;
-import static io.github.kits.json.tokenizer.JsonTokenType.BEGIN_OBJECT;
-import static io.github.kits.json.tokenizer.JsonTokenType.BLANK;
-import static io.github.kits.json.tokenizer.JsonTokenType.END_ARRAY;
-import static io.github.kits.json.tokenizer.JsonTokenType.END_OBJECT;
-import static io.github.kits.json.tokenizer.JsonTokenType.NULL;
-import static io.github.kits.json.tokenizer.JsonTokenType.QUOTATION;
-import static io.github.kits.json.tokenizer.JsonTokenType.SEP_COLON;
-import static io.github.kits.json.tokenizer.JsonTokenType.SEP_COMMA;
+import static io.github.kits.json.tokenizer.JsonTokenKind.COLON;
+import static io.github.kits.json.tokenizer.JsonTokenKind.COMMA;
+import static io.github.kits.json.tokenizer.JsonTokenKind.DOUBLE_QUOTE;
+import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BIG_PARANTHESES;
+import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BRACKET;
+import static io.github.kits.json.tokenizer.JsonTokenKind.NULL;
+import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BIG_PARANTHESES;
+import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BRACKET;
+import static io.github.kits.json.tokenizer.JsonTokenKind.SP;
 
 /**
  * Json解析器: 将Object对象转换为Json字符串
@@ -67,13 +66,6 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 			   .array(this::arrayToJson)
 			   .collection(this::arrayToJson)
 			   .orElse(this::objectToJson);
-//		if (isString(object, false))
-//			result = object.toString();
-//		else if (object instanceof Collection || object.getClass().isArray()) {
-//			result = arrayToJson(object);
-//		} else {
-//			result = objectToJson(object);
-//		}
 		result = Types.function(object, builder.build());
 		this.isPretty.set(false);
 		this.indent.get().set(0);
@@ -156,7 +148,8 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 				collection.add(Array.get(object, i));
 			}
 		}
-		StringBuilder json = new StringBuilder(BEGIN_ARRAY.getValue());
+		StringBuilder json = new StringBuilder();
+		json.append((char) LEFT_BRACKET);
 		if (isPretty.get()) {
 			json.append(Consts.CRLF);
 			indent.get().getAndIncrement();
@@ -175,17 +168,17 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 												 && !isJsonObject(objectJson)
 												 && !Strings.isNumber(objectJson, true);
 					if (isAddQuotation)
-						json.append(QUOTATION.getValue());
+						json.append((char) (char) DOUBLE_QUOTE);
 					json.append(objectJson);
 					if (isAddQuotation)
-						json.append(QUOTATION.getValue());
+						json.append((char) (char) DOUBLE_QUOTE);
 				}
 
 				addCRLF(json);
 			});
 		}
 
-		deleteUnnecessary(json, END_ARRAY);
+		deleteUnnecessary(json, (char) RIGHT_BRACKET);
 		return json.toString();
 	}
 
@@ -201,50 +194,11 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 	private String objectToJson(Object object) {
 		if (Objects.isNull(object))
 			return null;
-//		if (object instanceof Map) {
-//			Map<Object, Object> map     = (Map) object;
-//			StringBuilder       mapJson = new StringBuilder(BEGIN_OBJECT.getValue());
-//			if (isPretty.get()) {
-//				mapJson.append(Consts.CRLF);
-//				indent.get().getAndIncrement();
-//			}
-//			map.forEach((k, v) -> {
-//				addTab(mapJson);
-//				objectJson(mapJson, k);
-//				mapJson.append(SEP_COLON.getValue()).append(BLANK.getValue());
-//				objectJson(mapJson, v);
-//
-//				addCrlfOrBlank(mapJson);
-//			});
-//			deleteUnnecessary(mapJson, END_OBJECT);
-//			return mapJson.toString();
-//		} else if (object instanceof Date) {
-//			return DateTimes.format((Date) object, DateTimes.YYYY_MM_DD_MM_HH_MM_SS);
-//		} else if (object instanceof BigDecimal) {
-//			if (BigDecimal.ZERO.compareTo((BigDecimal) object) == 0) {
-//				object = BigDecimal.ZERO;
-//			}
-//			return ((BigDecimal) object).toPlainString();
-//		} else if (object instanceof Collection || object.getClass().isArray()) {
-//			return arrayToJson(object);
-//		} else if (object instanceof Class) {
-//			return object.toString();
-//		} else if (isBool(object)) {
-//			return object.toString();
-//		} else if (object instanceof Float || object instanceof Double) {
-//			return new BigDecimal(object.toString()).toPlainString();
-//		} else if (Envs.isBasicType(object.getClass()) || Envs.isSystemType(object.getClass())) {
-//			return object.toString();
-//		} else if (object instanceof Enum) {
-//			return ((Enum) object).name();
-//		}
-//		return customObjectToJson(object);
-
 		TypeFunctionConfig.Builder<Object, String> build = TypeFunctionConfig.builder();
 		build.collection(this::arrayToJson)
 			 .array(this::arrayToJson)
 			 .map(map -> {
-				 StringBuilder mapJson = new StringBuilder(BEGIN_OBJECT.getValue());
+				 StringBuilder mapJson = new StringBuilder((char) LEFT_BIG_PARANTHESES);
 				 if (isPretty.get()) {
 					 mapJson.append(Consts.CRLF);
 					 indent.get().getAndIncrement();
@@ -252,15 +206,15 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 				 map.forEach((k, v) -> {
 					 indentTab(mapJson);
 					 objectJson(mapJson, k);
-					 mapJson.append(SEP_COLON.getValue());
+					 mapJson.append((char) COLON);
 					 if (isPretty.get()) {
-					 	mapJson.append(BLANK.getValue());
+					 	mapJson.append((char) (char) SP);
 					 }
 					 objectJson(mapJson, v);
 
 					 addCRLF(mapJson);
 				 });
-				 deleteUnnecessary(mapJson, END_OBJECT);
+				 deleteUnnecessary(mapJson, (char) RIGHT_BIG_PARANTHESES);
 				 return mapJson.toString();
 			 })
 			 .bigDecimal(bigDecimal -> {
@@ -287,7 +241,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 	 * @param end  添加结尾字符到Json字符串中 } | ]
 	 *             Add end character to Json string
 	 */
-	private void deleteUnnecessary(StringBuilder json, JsonTokenType end) {
+	private void deleteUnnecessary(StringBuilder json, char end) {
 		if (json.length() > 1)
 			if (isPretty.get() && json.length() > 2)
 				json.delete(json.length() - 3, json.length());
@@ -297,7 +251,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 			json.append(Consts.CRLF);
 			json.append(Strings.repeat(Consts.TAB, indent.get().decrementAndGet()));
 		}
-		json.append(end.getValue());
+		json.append(end);
 	}
 
 	/**
@@ -310,10 +264,11 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 	 * JSON String
 	 */
 	private String customObjectToJson(Object object) {
-		StringBuilder json                = new StringBuilder(BEGIN_OBJECT.getValue());
+		StringBuilder json                = new StringBuilder();
 		AtomicBoolean isCameCase          = new AtomicBoolean(false);
 		AtomicBoolean isNoneSerializeNull = new AtomicBoolean(false);
 		Class<?>      aClass              = object.getClass();
+		json.append((char) LEFT_BIG_PARANTHESES);
 
 		// 如果类上标注了@NoneSerializeNull则属性值为null时忽略
 		// Ignore if the attribute value is null if @NoneSerializeNull is marked on the class
@@ -387,11 +342,11 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 
 						  indentTab(json);
 
-						  json.append(QUOTATION.getValue()).append(fieldName)
-							  .append(QUOTATION.getValue()).append(SEP_COLON.getValue());
+						  json.append((char) DOUBLE_QUOTE).append(fieldName)
+							  .append((char) DOUBLE_QUOTE).append((char) COLON);
 
 						  if (isPretty.get()) {
-							  json.append(BLANK.getValue());
+							  json.append((char) SP);
 						  }
 
 						  if (Objects.nonNull(value)) {
@@ -403,13 +358,13 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 							  else
 								  complexValue(value, json);
 						  } else
-							  json.append(NULL.getValue());
+							  json.append(NULL);
 
 						  addCRLF(json);
 					  }
 				  });
 
-		deleteUnnecessary(json, END_OBJECT);
+		deleteUnnecessary(json, (char) RIGHT_BIG_PARANTHESES);
 		return json.toString();
 	}
 
@@ -433,9 +388,9 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 	 *             Result String
 	 */
 	private void addCRLF(StringBuilder json) {
-		json.append(SEP_COMMA.getValue());
+		json.append((char) COMMA);
 		if (isPretty.get())
-			json.append(Consts.CRLF).append(BLANK.getValue());
+			json.append(Consts.CRLF).append((char) SP);
 	}
 
 	/**
@@ -457,7 +412,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 			isAddQuotation = false;
 
 		if (isAddQuotation)
-			json.append(QUOTATION.getValue());
+			json.append((char) DOUBLE_QUOTE);
 		if (Objects.isNull(value)) {
 			json.append("null");
 		} else if ("".equals(value)) {
@@ -466,7 +421,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 			json.append(value);
 		}
 		if (isAddQuotation)
-			json.append(QUOTATION.getValue());
+			json.append((char) DOUBLE_QUOTE);
 	}
 
 	/**
@@ -552,24 +507,29 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 		}
 
 		if (isString)
-			json.append(QUOTATION.getValue());
+			json.append((char) DOUBLE_QUOTE);
 		json.append(object);
 		if (isString)
-			json.append(QUOTATION.getValue());
+			json.append((char) DOUBLE_QUOTE);
 	}
 
 	@Override
-	public final T toObject(String jsonStr, Class<T> targetClass) {
+	public final T toObject(String jsonStr, Class<T> target) {
 		throw new JsonNotSupportedException();
 	}
 
 	@Override
-	public final List<T> toList(String jsonStr, Class<T> targetClass) {
+	public final List<T> toList(String jsonStr, Class<T> target) {
 		throw new JsonNotSupportedException();
 	}
 
 	@Override
-	public final T jsonPath(String json, String path, Class<T> targetClass) {
+	public final <V> V jsonPath(String json, String path, Class<V> target) {
+		throw new JsonNotSupportedException();
+	}
+
+	@Override
+	public final JsonPath jsonPath(String json) {
 		throw new JsonNotSupportedException();
 	}
 

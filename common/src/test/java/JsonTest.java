@@ -1,5 +1,7 @@
 import io.github.kits.json.Json;
+import io.github.kits.json.JsonPath;
 import io.github.kits.json.annotations.JsonSerializeName;
+import io.github.kits.json.tokenizer.JsonTokenizer;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
@@ -14,6 +16,12 @@ import java.util.Map;
  * @since 1.0.0
  */
 public class JsonTest extends TestCase {
+
+	public void testJsonPath() {
+//		JsonPath jsonPath = JsonPath.newInstance("{\"user\": \"whimthen\", \"age\": 34}");
+		JsonPath jsonPath = Json.jsonPath("{\"name\": \"whim then\", \"age\": 1, \"operation\": {\"func\": \"get\"}}");
+		System.out.println(jsonPath.get("/operation/func", String.class));
+	}
 
 	public void testJson() {
 		System.out.println(Json.toJson(false));

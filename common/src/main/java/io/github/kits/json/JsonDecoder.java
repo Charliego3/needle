@@ -7,7 +7,6 @@ import io.github.kits.exception.JsonParseException;
 import io.github.kits.json.tokenizer.JsonTokenizer;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,40 +20,37 @@ public class JsonDecoder<T> implements JsonSupport<T> {
 	private JsonTokenizer tokenizer = JsonTokenizer.newInstance();
 
 	@Override
-	public T toObject(String json, Class<T> targetClass) {
-		return jsonPath(json, "/", targetClass);
+	public T toObject(String json, Class<T> target) {
+		return jsonPath(json, "/", target);
 	}
 
 	@Override
-	public List<T> toList(String json, Class<T> targetClass) {
+	public List<T> toList(String json, Class<T> target) {
 		if (Strings.isNullOrEmpty(json))
 			return Collections.emptyList();
 		return null;
 	}
 
 	@Override
-	public T jsonPath(String json, String path, Class<T> targetClass) {
-		Assert.isNotNull(targetClass, "Target Class is null!");
-
-		T object = null;
-
+	public <V> V jsonPath(String json, String path, Class<V> target) {
+		Assert.isNotNull(target, "Target Class is null!");
+		Assert.isTrue(Json.isJsonObject(json),
+			new JsonParseException("Json Array does not support path acquisition! Json: " + json));
 		try {
-			Object tokenize = tokenizer.tokenize(json, path);
-//			JsonTokenList tokenList = tokenizer.tokenize(json, path);
-//			object = Reflective.instance(targetClass);
-//			while (tokenList.hasMore()) {
-//				JsonToken jsonToken = tokenList.next();
-//				switch (jsonToken.getTokenType()) {
-//					case BEGIN_OBJECT:
-//						System.out.print(";;");
-//					case END_DOCUMENT:
-//						break;
-//				}
-//			}
+			JsonKind tokenize = tokenizer.tokenize(json);
+			if (tokenize instanceof JsonPath) {
+				JsonPath kvJsonPath = (JsonPath) tokenize;
+				return kvJsonPath.get(path, target);
+			}
 		} catch (IOException ie) {
 			throw new JsonParseException(ie);
 		}
-		return object;
+		return null;
+	}
+
+	@Override
+	public JsonPath jsonPath(String json) {
+		return jsonPath(json, "/", JsonPath.class);
 	}
 
 	@Override

@@ -7,6 +7,8 @@ package io.github.kits.json.tokenizer;
  */
 public interface JsonTokenKind {
 
+	String NULL = "null";
+
 	/**
 	 * Left Big Parantheses '{'
 	 */
@@ -61,6 +63,11 @@ public interface JsonTokenKind {
 	 * Slash '/'
 	 */
 	byte SLASH = 47;
+
+	/**
+	 * Backslash '\'
+	 */
+	byte BACKSLASH = 92;
 
 	/**
 	 * STAR '*'
