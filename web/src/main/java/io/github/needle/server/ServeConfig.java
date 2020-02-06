@@ -1,7 +1,9 @@
 package io.github.needle.server;
 
 import io.github.kits.PropertiesKit;
+import io.github.kits.Strings;
 import io.github.needle.bean.Singleton;
+import io.github.needle.constants.Consts;
 
 /**
  * @author whimthen
@@ -40,7 +42,9 @@ public class ServeConfig {
 	}
 
 	public String getServerName() {
-		return serverName;
+		if (Strings.isNullOrEmpty(serverName))
+			setServerName(Consts.DEFAULT_SERVER_NAME);
+		return serverName.toUpperCase();
 	}
 
 	public ServeConfig setServerName(String serverName) {

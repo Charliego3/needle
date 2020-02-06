@@ -47,8 +47,8 @@ import static io.github.kits.json.tokenizer.JsonTokenKind.SP;
  */
 public class JsonEncoder<T> implements JsonSupport<T> {
 
-	private ThreadLocal<Boolean>       isPretty = ThreadLocal.withInitial(() -> false);
-	private ThreadLocal<AtomicInteger> indent   = ThreadLocal.withInitial(() -> new AtomicInteger(0));
+	private final ThreadLocal<Boolean>       isPretty = ThreadLocal.withInitial(() -> false);
+	private final ThreadLocal<AtomicInteger> indent   = ThreadLocal.withInitial(() -> new AtomicInteger(0));
 
 	@Override
 	public String toJson(Object object) {

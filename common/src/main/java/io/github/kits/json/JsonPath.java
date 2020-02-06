@@ -13,7 +13,7 @@ import java.util.Objects;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class JsonPath extends HashMap implements JsonKind {
+public class JsonPath extends HashMap<Object, Object> implements JsonKind {
 
 	private JsonPath() {}
 

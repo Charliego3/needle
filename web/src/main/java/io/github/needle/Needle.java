@@ -30,7 +30,7 @@ public class Needle {
 
 	private static Needle               needle;
 	private        Server               server;
-	private        Consumer<Exception>  startupExceptionHandler;
+	private final  Consumer<Exception>  startupExceptionHandler;
 	private        ServerStartupHandler startupHandler;
 	private        ServeContext         serveContext;
 	private        HttpRouterHandler    routerHandler;
@@ -92,11 +92,7 @@ public class Needle {
 		ex(() -> {
 			this.startupHandler.buildServeConfigFromCommand(args);
 			this.startupHandler.buildServeConfigFromProperties();
-			if (Strings.isNullOrEmpty(ServeConfig.getInstance().getServerName()))
-				ServeConfig.getInstance().setServerName(Consts.DEFAULT_SERVER_NAME);
-			String serverName = ServeConfig.getInstance().getServerName().toUpperCase();
-			if (ServeConfig.getInstance().getServerName().equalsIgnoreCase("WINTER"))
-				serverName += "-MAIN";
+			String serverName = ServeConfig.getInstance().getServerName() + "-MAIN";;
 			Thread.currentThread().setName(serverName);
 			this.startupHandler.printEnvironment();
 			this.startupHandler.printBanner();

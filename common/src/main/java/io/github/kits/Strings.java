@@ -28,9 +28,9 @@ public class Strings {
 	 * a-z
 	 */
 	public static final String[] CHARS = new String[]{
-			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-			"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-			"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+		"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
 	};
 
 	/**
@@ -55,7 +55,7 @@ public class Strings {
 	/**
 	 * 判断字符串是否为空 或两端为空白字符
 	 *
-	 * @param isBlack 是否去除两端空白字符
+	 * @param isBlack  是否去除两端空白字符
 	 * @param resource 源字符串
 	 * @return 结果
 	 */
@@ -179,7 +179,7 @@ public class Strings {
 	 * 判断正则是否至少有一个匹配
 	 *
 	 * @param resource 资源字符串
-	 * @param regex 多正则
+	 * @param regex    多正则
 	 * @return Boolean
 	 */
 	public static String replaceByMulti(String resource, String[] regex, String[] replacements) {
@@ -213,7 +213,7 @@ public class Strings {
 	 * 转换字符串长度, 用空格填充
 	 * Convert string length, padded with spaces
 	 *
-	 * @param source 待转换字符串, String to be converted
+	 * @param source      待转换字符串, String to be converted
 	 * @param indentCount 总长度, Total length
 	 * @return 转换后的字符串, Converted string
 	 */
@@ -228,7 +228,7 @@ public class Strings {
 	}
 
 	/**
-	 * @param num num
+	 * @param num   num
 	 * @param radix radix
 	 * @return String
 	 */
@@ -237,8 +237,8 @@ public class Strings {
 			return null;
 		}
 		num = num < 0 ? num * -1 : num;
-		StringBuilder result   = new StringBuilder();
-		long          tmpValue = num;
+		StringBuilder result = new StringBuilder();
+		long tmpValue = num;
 		while (true) {
 			long value = (int) (tmpValue % radix);
 			result.insert(0, CHARS[(int) value]);
@@ -271,7 +271,7 @@ public class Strings {
 		}
 		if (Integer.MAX_VALUE / count < len) {
 			throw new OutOfMemoryError("Repeating " + len + " bytes String " + count +
-					" times will produce a String exceeding maximum size.");
+										   " times will produce a String exceeding maximum size.");
 		}
 		StringBuilder repeatString = new StringBuilder(resource);
 		for (int i = 1; i < count; i++) {
@@ -313,7 +313,7 @@ public class Strings {
 	 * 判断正则是否匹配
 	 *
 	 * @param resource 资源字符串
-	 * @param regex 正则
+	 * @param regex    正则
 	 * @return Boolean
 	 */
 	public static boolean regexMatch(String resource, String regex) {
@@ -326,7 +326,7 @@ public class Strings {
 	 * 判断正则是否匹配
 	 *
 	 * @param resource 资源字符串
-	 * @param regex 正则
+	 * @param regex    正则
 	 * @return Boolean
 	 */
 	public static boolean regexFind(String resource, String regex) {
@@ -339,7 +339,7 @@ public class Strings {
 	 * 判断正则是否至少有一个匹配
 	 *
 	 * @param resource 资源字符串
-	 * @param regex 多正则
+	 * @param regex    多正则
 	 * @return Boolean
 	 */
 	public static boolean findByMultiRegex(String resource, String... regex) {
@@ -366,7 +366,17 @@ public class Strings {
 	}
 
 	/**
-	 * 判断字符串是否为数字类型(十进制)
+	 * 判断字符串是否为数字(十进制)
+	 *
+	 * @param val 需要判断的字符串
+	 * @return true-是数字类型 | false-不是数字类型
+	 */
+	public static boolean isNumber(String val) {
+		return isNumber(val, false);
+	}
+
+	/**
+	 * 判断字符串是否为数字类型
 	 * 整数型、浮点型
 	 *
 	 * @param val 需要判断的值
@@ -399,12 +409,9 @@ public class Strings {
 	 * @return true-是Boolean类型 | false-不是Boolean类型
 	 */
 	public static boolean isBoolean(String val) {
-		return isNotNullOrEmpty(val) && ("TRUE".equalsIgnoreCase(val.toUpperCase())
-											 || "FALSE".equalsIgnoreCase(val.toUpperCase()));
-	}
-
-	public static boolean isNumber(String val) {
-		return isNumber(val, false);
+		return isNotNullOrEmpty(val)
+				   && ("TRUE".equalsIgnoreCase(val.trim())
+						   || "FALSE".equalsIgnoreCase(val.trim()));
 	}
 
 	/**
@@ -434,8 +441,8 @@ public class Strings {
 	public static String unCameCase(String val) {
 		try {
 			if (isNotNullOrEmpty(val)) {
-				CharReader    charReader = new CharReader(val);
-				StringBuilder result     = new StringBuilder();
+				CharReader charReader = new CharReader(val);
+				StringBuilder result = new StringBuilder();
 				while (charReader.hasMore()) {
 					char ch = charReader.next();
 					if (ch >= 'A' && ch <= 'Z') {
@@ -462,8 +469,8 @@ public class Strings {
 	public static String cameCase(String val) {
 		try {
 			if (isNotNullOrEmpty(val)) {
-				CharReader    charReader = new CharReader(val);
-				StringBuilder result     = new StringBuilder(String.valueOf(charReader.next()));
+				CharReader charReader = new CharReader(val);
+				StringBuilder result = new StringBuilder(String.valueOf(charReader.next()));
 				while (charReader.hasMore()) {
 					char ch = charReader.next();
 					if (ch == '_') {

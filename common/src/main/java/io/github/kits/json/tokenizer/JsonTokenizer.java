@@ -49,7 +49,7 @@ public class JsonTokenizer implements Serializable {
 	private static final long serialVersionUID = -2019857734532143284L;
 	private CharReader        charReader;
 	private boolean           isValue = false;
-	private Object[]          kv = new Object[2];
+	private final Object[]    kv = new Object[2];
 	private Object            value = null;
 	private boolean           isFirstObject = true, isFirstArray = true;
 
