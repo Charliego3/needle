@@ -168,10 +168,10 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 												 && !isJsonObject(objectJson)
 												 && !Strings.isNumber(objectJson, true);
 					if (isAddQuotation)
-						json.append((char) (char) DOUBLE_QUOTE);
+						json.append((char) DOUBLE_QUOTE);
 					json.append(objectJson);
 					if (isAddQuotation)
-						json.append((char) (char) DOUBLE_QUOTE);
+						json.append((char) DOUBLE_QUOTE);
 				}
 
 				addCRLF(json);
@@ -198,7 +198,8 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 		build.collection(this::arrayToJson)
 			 .array(this::arrayToJson)
 			 .map(map -> {
-				 StringBuilder mapJson = new StringBuilder((char) LEFT_BIG_PARANTHESES);
+				 StringBuilder mapJson = new StringBuilder();
+				 mapJson.append((char) LEFT_BIG_PARANTHESES);
 				 if (isPretty.get()) {
 					 mapJson.append(Consts.CRLF);
 					 indent.get().getAndIncrement();
@@ -242,14 +243,14 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 	 *             Add end character to Json string
 	 */
 	private void deleteUnnecessary(StringBuilder json, char end) {
-		if (json.length() > 1)
-			if (isPretty.get() && json.length() > 2)
-				json.delete(json.length() - 3, json.length());
-			else
-				json.delete(json.length() - 1, json.length());
 		if (isPretty.get()) {
+			if (json.length() > 2) {
+				json.delete(json.length() - 3, json.length());
+			}
 			json.append(Consts.CRLF);
 			json.append(Strings.repeat(Consts.TAB, indent.get().decrementAndGet()));
+		} else if (json.length() > 1) {
+			json.delete(json.length() - 1, json.length());
 		}
 		json.append(end);
 	}
@@ -534,7 +535,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 	}
 
 	public static <T> JsonEncoder<T> newInstance() {
-		return new JsonEncoder<T>();
+		return new JsonEncoder<>();
 	}
 
 }

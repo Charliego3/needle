@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class JsonDecoder<T> implements JsonSupport<T> {
 
-	private JsonTokenizer tokenizer = JsonTokenizer.newInstance();
+	private final JsonTokenizer tokenizer = JsonTokenizer.newInstance();
 
 	@Override
 	public T toObject(String json, Class<T> target) {

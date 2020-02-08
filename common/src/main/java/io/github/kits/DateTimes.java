@@ -31,6 +31,10 @@ public class DateTimes {
 
     public static final String YYYYMMDD = "yyyyMMdd";
 
+    public static Date get(String date) {
+        return new Date(date);
+    }
+
     /**
      * 格式化时间
      *

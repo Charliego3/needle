@@ -1,7 +1,6 @@
 package io.github.kits.json;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 自定义Json解析工具类
@@ -12,7 +11,7 @@ import java.util.Map;
  */
 public class Json {
 
-	private static JsonSupport jsonEncoder = JsonEncoder.newInstance();
+	private static final JsonEncoder<Object> jsonEncoder = JsonEncoder.newInstance();
 
 	public static <T> T toObject(String json, Class<T> target) {
 		return new JsonDecoder<T>().toObject(json, target);

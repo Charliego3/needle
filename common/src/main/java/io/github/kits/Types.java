@@ -41,35 +41,33 @@ public class Types {
 		if (Objects.isNull(object)) {
 			throw new TypeException("Class Type is null!");
 		}
-		R r = null;
+		FunctionType functionType = OBJECT;
 		if (object instanceof Collection) {
-			r = apply(COLLECTION, config, object);
+			functionType = COLLECTION;
 		} else if (object instanceof Map) {
-			r = apply(MAP, config, object);
+			functionType = MAP;
 		} else if (object instanceof Date) {
-			r = apply(DATE, config, object);
+			functionType = DATE;
 		} else if (object instanceof BigDecimal) {
-			r = apply(BIG_DECIMAL, config, object);
+			functionType = BIG_DECIMAL;
 		} else if (object.getClass().isArray()) {
-			r = apply(ARRAY, config, object);
+			functionType = ARRAY;
 		} else if (object instanceof Class) {
-			r = apply(CLASS, config, object);
+			functionType = CLASS;
 		} else if (object instanceof Boolean) {
-			r = apply(BOOLEAN, config, object);
+			functionType = BOOLEAN;
 		} else if (object instanceof Number && !(object instanceof Byte)) {
-			r = apply(NUMBER, config, object);
+			functionType = NUMBER;
 		} else if (Envs.isBasicType(object.getClass())) {
-			r = apply(BASIC, config, object);
+			functionType = BASIC;
 		} else if (Envs.isSystemType(object.getClass())) {
-			r = apply(SYSTEM, config, object);
+			functionType = SYSTEM;
 		} else if (object instanceof Enum) {
-			r = apply(ENUM, config, object);
+			functionType = ENUM;
 		} else if (object instanceof CharSequence || object instanceof Character) {
-			r = apply(STRING, config, object);
-		} else {
-			r = apply(OBJECT, config, object);
+			functionType = STRING;
 		}
-		return r;
+		return apply(functionType, config, object);
 	}
 
 	private static <T, R> R apply(FunctionType type, TypeFunctionConfig<T, R> config, T object) {
@@ -78,30 +76,40 @@ public class Types {
 						   .orElse(null);
 	}
 
-	public static <T, R> R type(Object object, Class<R> target) {
+	public static <R> R type(Object object, Class<R> target) {
 		if (Objects.isNull(target)) {
 			throw new TypeException("Target class is null!");
 		}
+		if (Objects.isNull(object)) {
+			return null;
+		}
 		R r = null;
 		if (Collection.class.isAssignableFrom(target)) {
-			if (object instanceof List || object instanceof Set) {
-				return (R) object;
-			}
 			if (List.class.isAssignableFrom(target)) {
 				ArrayList<Object> objects = new ArrayList<>();
 				objects.add(object);
-				return (R) objects;
+				r = (R) objects;
 			} else if (Set.class.isAssignableFrom(target)) {
 				HashSet<Object> objects = new HashSet<>();
 				objects.add(object);
-				return (R) objects;
+				r = (R) objects;
 			}
 		} else if (Map.class.isAssignableFrom(target)) {
-
+			HashMap<Object, Object> maps = new HashMap<>();
+			maps.put("", object);
+			r = (R) maps;
 		} else if (Date.class.isAssignableFrom(target)) {
-
+			if (object instanceof Date) {
+				r = (R) object;
+			} else {
+				r = (R) DateTimes.get(object.toString());
+			}
 		} else if (BigDecimal.class.isAssignableFrom(target)) {
-
+			if (object instanceof BigDecimal) {
+				r = (R) object;
+			} else {
+				r = (R) new BigDecimal(object.toString());
+			}
 		} else if (target.isArray()) {
 
 		} else if (Class.class.isAssignableFrom(target)) {
@@ -110,16 +118,18 @@ public class Types {
 
 		} else if (Number.class.isAssignableFrom(target) && !(Byte.class.isAssignableFrom(target))) {
 
-		} else if (Envs.isBasicType(target)) {
-
-		} else if (Envs.isSystemType(target)) {
-
-		} else if (Enum.class.isAssignableFrom(target)) {
+		}
+//		else if (Envs.isBasicType(target)) {
+//
+//		} else if (Envs.isSystemType(target)) {
+//
+//		}
+		else if (Enum.class.isAssignableFrom(target)) {
 
 		} else if (CharSequence.class.isAssignableFrom(target) || Character.class.isAssignableFrom(target)) {
-
+			r = (R) object.toString();
 		} else {
-
+			r = (R) object;
 		}
 		return r;
 	}

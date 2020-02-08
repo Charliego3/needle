@@ -57,7 +57,7 @@ public class Reflective {
 	 * @param field  Field
 	 * @param params Parameter
 	 */
-	public static void invokeSetMethod(Object object, Field field, Object... params) {
+	public static void setFieldValue(Object object, Field field, Object... params) {
 		String   methodName = complexSetMethodName(field.getName());
 		Class<?> tClass     = null;
 		try {
@@ -70,7 +70,7 @@ public class Reflective {
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 			if (Objects.nonNull(tClass.getSuperclass()) && !Envs.isBasicType(tClass.getSuperclass())
 					&& !Envs.isSystemType(tClass.getSuperclass())) {
-				invokeSetMethod(object, field, params);
+				setFieldValue(object, field, params);
 			} else {
 				throw new ReflectiveException(e);
 			}
@@ -113,9 +113,7 @@ public class Reflective {
 
 		Constructor<T> constructor = Arrays.stream((Constructor<T>[]) target.getDeclaredConstructors())
 										   .min(Comparator.comparingInt(v -> v.getParameterTypes().length))
-										   .orElseThrow(() -> {
-											   return new JsonParseException("No Constructor, Class: " + target.getName());
-										   });
+										   .orElseThrow(() -> new JsonParseException("No Constructor, Class: " + target.getName()));
 
 		Class<?>[] parameterTypes = constructor.getParameterTypes();
 		Object[] params = new Object[parameterTypes.length];

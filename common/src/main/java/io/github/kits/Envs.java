@@ -164,7 +164,7 @@ public class Envs {
 	 * @param clazz Class 对象
 	 * @return true: 是基本类型, false:非基本类型
 	 */
-	public static boolean isBasicType(Class clazz) {
+	public static <T> boolean isBasicType(Class<T> clazz) {
 		return clazz == null || clazz.isPrimitive() || clazz.getName().startsWith("java.lang");
 	}
 
@@ -196,7 +196,7 @@ public class Envs {
 	 * @param clazz Class 对象
 	 * @return true: 是JDK 中定义的类, false:非JDK 中定义的类
 	 */
-	public static boolean isSystemType(Class clazz) {
+	public static <T> boolean isSystemType(Class<T> clazz) {
 		if (clazz.isPrimitive()) {
 			return true;
 		}
@@ -209,7 +209,7 @@ public class Envs {
 		return false;
 	}
 
-	private static List<String> systemPackages = Arrays.asList("java.", "jdk.", "sun.", "javax.", "com.sun", "com.oracle", "javassist");
+	private static final List<String> systemPackages = Arrays.asList("java.", "jdk.", "sun.", "javax.", "com.sun", "com.oracle", "javassist");
 
 	/**
 	 * 判断某个类型是否实现了某个接口
@@ -286,7 +286,7 @@ public class Envs {
 	 * @param className 类名称
 	 * @return 加载的Class
 	 */
-	public static Class forName(String className) throws ClassNotFoundException {
+	public static Class<?> forName(String className) throws ClassNotFoundException {
 		try {
 			return Class.forName(className);
 		} catch (Exception ex) {

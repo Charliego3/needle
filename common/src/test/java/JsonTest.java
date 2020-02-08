@@ -1,6 +1,7 @@
 import io.github.kits.json.Json;
 import io.github.kits.json.JsonPath;
 import io.github.kits.json.annotations.JsonSerializeName;
+import io.github.kits.json.annotations.NoneSerializeNull;
 import io.github.kits.json.tokenizer.JsonTokenizer;
 import junit.framework.TestCase;
 
@@ -56,7 +57,7 @@ public class JsonTest extends TestCase {
 
 		System.out.println("=========================");
 
-		String arrayJson = Json.toJson(new ArrayList<User>(){{add(user);add(user1);}}, true);
+		String arrayJson = Json.toJson(new ArrayList<User>(){{add(user);add(user1);}}, false);
 		System.out.println(arrayJson);
 
 		System.out.println("=========================");
