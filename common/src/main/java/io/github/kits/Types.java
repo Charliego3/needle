@@ -118,28 +118,7 @@ public class Types {
 				r = (R) new BigDecimal(object.toString());
 			}
 		} else if (target.isArray()) {
-			if (object.getClass().isArray()) {
-				r = array(object, target);
-			} else {
-				if (target.getComponentType().isPrimitive()) {
-					Object arr = Array.newInstance(target.getComponentType(), 1);
-					Array.set(arr, 0, object);
-					r = (R) arr;
-				} else {
-					String name = target.getName();
-					if (Strings.isNotBlack(name)) {
-						name = name.substring(2);
-						name = name.substring(0, name.length() - 1);
-					}
-					try {
-						Object arr = Array.newInstance(Envs.forName(name), 1);
-						Array.set(arr, 0, object);
-						r = (R) arr;
-					} catch (ClassNotFoundException e) {
-						Logger.error("Cast Object Array is error", e);
-					}
-				}
-			}
+			r = array(object, target);
 		} else if (Class.class.isAssignableFrom(target)) {
 
 		} else if (Boolean.class.isAssignableFrom(target)) {
@@ -170,69 +149,47 @@ public class Types {
 		return r;
 	}
 
+	/**
+	 * 构建新数组，并将object的值放入新数组中
+	 *
+	 * @param object 数组对象
+	 * @param tClass 需要转换的目标对象类型
+	 * @param <T>    范型
+	 * @return 新构建的数组
+	 */
 	private static <T> T array(Object object, Class<T> tClass) {
-		int length = Array.getLength(object);
-		Object result = null;
-//		switch (tClass.getName()) {
-//			case "[S":
-//				result = new short[length];
-//				break;
-//			case "[Ljava.lang.Short;":
-//				result = new Short[length];
-//				break;
-//			case "[I":
-//				result = new int[length];
-//				break;
-//			case "[Ljava.lang.Integer;":
-//				result = new Integer[length];
-//				break;
-//			case "[J":
-//				result = new long[length];
-//				break;
-//			case "[Ljava.lang.Long;":
-//				result = new Long[length];
-//				break;
-//			case "[F":
-//				result = new float[length];
-//				break;
-//			case "[Ljava.lang.Float;":
-//				result = new Float[length];
-//				break;
-//			case "[D":
-//				result = new double[length];
-//				break;
-//			case "[Ljava.lang.Double;":
-//				result = new Double[length];
-//				break;
-//			case "[Z":
-//				result = new boolean[length];
-//				break;
-//			case "[Ljava.lang.Boolean;":
-//				result = new Boolean[length];
-//				break;
-//			case "[C":
-//				result = new char[length];
-//				break;
-//			case "[Ljava.lang.Character;":
-//				result = new Character[length];
-//				break;
-//			case "[B":
-//				result = new byte[length];
-//				break;
-//			case "[Ljava.lang.Byte;":
-//				result = new Byte[length];
-//				break;
-//		}
-		result = Array.newInstance(tClass.getComponentType(), length);
-//		if (Objects.nonNull(result)) {
+		T t = null;
+		if (object.getClass().isArray()) {
+			int length = Array.getLength(object);
+			Object result = Array.newInstance(tClass.getComponentType(), length);
 			for (int i = 0; i < length; i++) {
 				Array.set(result, i, Array.get(object, i));
 			}
-//		}
-		return (T) result;
+			t = (T) result;
+		} else {
+			if (tClass.getComponentType().isPrimitive()) {
+				Object arr = Array.newInstance(tClass.getComponentType(), 1);
+				Array.set(arr, 0, object);
+				t = (T) arr;
+			} else {
+				String name = tClass.getName();
+				if (Strings.isNotBlack(name)) {
+					name = name.substring(2);
+					name = name.substring(0, name.length() - 1);
+				}
+				try {
+					Object arr = Array.newInstance(Envs.forName(name), 1);
+					Array.set(arr, 0, object);
+					t = (T) arr;
+				} catch (ClassNotFoundException e) {
+					Logger.error("Cast Object Array is error", e);
+				}
+			}
+		}
+		return t;
 	}
 
-	private static<T> T object(Object object, Class<T> tClass) {
+	private static <T> T object(Object object, Class<T> tClass) {
 		return null;
 	}
 
