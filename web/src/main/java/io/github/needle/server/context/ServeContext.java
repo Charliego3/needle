@@ -1,7 +1,7 @@
 package io.github.needle.server.context;
 
 import io.github.kits.Envs;
-import io.github.kits.LambdaExes;
+import io.github.kits.Lambdas;
 import io.github.kits.Lists;
 import io.github.kits.log.Logger;
 import io.github.needle.constants.Consts;
@@ -26,7 +26,7 @@ public class ServeContext {
 		List<Class> serves = Envs.getDirClass(new File(classpath), Serve.class);
 		if (Lists.isNotNullOrEmpty(serves)) {
 			serves.stream()
-				.map(LambdaExes.rethrowFunction(sc -> (Serve) sc.newInstance()))
+				.map(Lambdas.rethrowFunction(sc -> (Serve) sc.newInstance()))
 				.forEach(serve -> {
 					serveList.add(serve);
 					Logger.infof("Register Serve: {}", serve.getClass().getCanonicalName());

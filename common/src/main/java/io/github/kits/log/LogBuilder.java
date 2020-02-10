@@ -156,12 +156,18 @@ public class LogBuilder {
 			else
 				msg.append(Json.toJson(message));
 			if (Objects.nonNull(args) && args.length > 0 && Strings.regexFind(msg.toString(), "(\\{\\})")) {
-				for (Object arg : args) {
+				if (Strings.searchByRegex(msg.toString(), "(\\{\\})") == 1) {
 					String m = msg.toString();
 					msg.delete(0, msg.toString().length());
-					// 对特殊字符加转译符号, 如$等做替换操作会抛异常: java.lang.IllegalArgumentException: Illegal group reference
-					String replacement = Matcher.quoteReplacement(Json.toJson(arg));
-					msg.append(Strings.replaceFirst(m, replacement, "\\{\\}"));
+					msg.append(Strings.replaceFirst(m, Json.toJson(args), "\\{\\}"));
+				} else {
+					for (Object arg : args) {
+						String m = msg.toString();
+						msg.delete(0, msg.toString().length());
+						// 对特殊字符加转译符号, 如$等做替换操作会抛异常: java.lang.IllegalArgumentException: Illegal group reference
+						String replacement = Matcher.quoteReplacement(Json.toJson(arg));
+						msg.append(Strings.replaceFirst(m, replacement, "\\{\\}"));
+					}
 				}
 			}
 			if (logLevel == LogLevel.ERROR && Objects.nonNull(logBody.getException())) {

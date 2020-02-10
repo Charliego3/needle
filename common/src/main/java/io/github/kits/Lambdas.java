@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class LambdaExes {
+public class Lambdas {
 
     @FunctionalInterface
     public interface ConsumerWithExceptions<T, E extends Exception> {

@@ -290,7 +290,7 @@ public class Envs {
 		try {
 			return Class.forName(className);
 		} catch (Exception ex) {
-			throw new ClassNotFoundException("load and define class " + className + " failed");
+			throw new ClassNotFoundException("load and define, Class: [" + className + "] failed");
 		}
 	}
 
@@ -400,7 +400,7 @@ public class Envs {
 		List<File> files   = Files.scanFile(rootFile);
 		Set<Class> classes = new HashSet<>();
 		if (!files.isEmpty()) {
-			files.forEach(LambdaExes.rethrowConsumer(file -> {
+			files.forEach(Lambdas.rethrowConsumer(file -> {
 					 String fileName = file.getCanonicalPath();
 					 if ("class".equals(Files.getFileExtension(fileName))) {
 						 //如果是内部类则跳过

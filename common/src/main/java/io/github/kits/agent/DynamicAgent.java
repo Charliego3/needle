@@ -5,7 +5,7 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
 import io.github.kits.Envs;
 import io.github.kits.Files;
-import io.github.kits.LambdaExes;
+import io.github.kits.Lambdas;
 import io.github.kits.log.Logger;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class DynamicAgent {
 		try {
 			VirtualMachine vm = VirtualMachine.attach(String.valueOf(currentPID));
 			agentJars.parallelStream()
-					 .forEach(LambdaExes.rethrowConsumer(vm::loadAgent));
+					 .forEach(Lambdas.rethrowConsumer(vm::loadAgent));
 			vm.detach();
 		} catch (IOException | AgentInitializationException | AgentLoadException e) {
 			Logger.error("VirtualMachine loadAgent error", e);

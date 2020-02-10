@@ -353,16 +353,14 @@ public class Strings {
 		if (source == null) {
 			return 0;
 		}
-
-		ArrayList<String> result = new ArrayList<>();
-
+		int count = 0;
 		Matcher matcher = PatternCache.get(regex).matcher(source);
 		if (matcher.find()) {
 			do {
-				result.add(matcher.group());
+				count++;
 			} while (matcher.find());
 		}
-		return result.size();
+		return count;
 	}
 
 	/**

@@ -1,8 +1,7 @@
+import io.github.common.model.People;
+import io.github.common.model.User;
 import io.github.kits.json.Json;
 import io.github.kits.json.JsonPath;
-import io.github.kits.json.annotations.JsonSerializeName;
-import io.github.kits.json.annotations.NoneSerializeNull;
-import io.github.kits.json.tokenizer.JsonTokenizer;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
@@ -198,9 +197,9 @@ public class JsonTest extends TestCase {
 
 		System.out.println(json);
 
-//		User user2 = Json.toObject("", User.class);
-//		List<User> userList1 = Json.toList("", User.class);
-//		User user3 = Json.jsonPath("", "", User.class);
+//		io.github.common.model.User user2 = Json.toObject("", io.github.common.model.User.class);
+//		List<io.github.common.model.User> userList1 = Json.toList("", io.github.common.model.User.class);
+//		io.github.common.model.User user3 = Json.jsonPath("", "", io.github.common.model.User.class);
 	}
 
 	public void testReflect() throws Exception {
@@ -252,83 +251,3 @@ public class JsonTest extends TestCase {
 
 }
 
-class People {
-
-	private String country;
-	private Integer code;
-
-	public People() {}
-
-	public People(String country) {
-		this.country = country;
-	}
-
-	public People(String country, Integer code) {
-		this.country = country;
-		this.code = code;
-	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	public Integer getCode() {
-		return code;
-	}
-
-	public void setCode(Integer code) {
-		this.code = code;
-	}
-
-}
-
-//@NoneSerializeNull
-class User extends People {
-
-	@JsonSerializeName(value = "userName")
-//	@NoneSerializeNull
-	private String name;
-//	private int    age;
-	private Double blance;
-//	@NoneSerializeNull
-	private User   user;
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public Double getBlance() {
-		return blance;
-	}
-
-	public void setBlance(Double blance) {
-		this.blance = blance;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public User setName(String name) {
-		this.name = name;
-		return this;
-	}
-
-//	public int getAge() {
-//		return age;
-//	}
-//
-//	public User setAge(int age) {
-//		this.age = age;
-//		return this;
-//	}
-
-}

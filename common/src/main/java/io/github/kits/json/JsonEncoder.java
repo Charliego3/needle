@@ -30,10 +30,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.github.kits.json.tokenizer.JsonTokenKind.COLON;
 import static io.github.kits.json.tokenizer.JsonTokenKind.COMMA;
 import static io.github.kits.json.tokenizer.JsonTokenKind.DOUBLE_QUOTE;
-import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BIG_PARANTHESES;
+import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BIG_PARENTHESES;
 import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BRACKET;
 import static io.github.kits.json.tokenizer.JsonTokenKind.NULL;
-import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BIG_PARANTHESES;
+import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BIG_PARENTHESES;
 import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BRACKET;
 import static io.github.kits.json.tokenizer.JsonTokenKind.SP;
 
@@ -57,7 +57,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 
 	@Override
 	public String toJson(Object object, boolean isPretty) {
-		if (Objects.isNull(object) || "null".equals(object))
+		if (Objects.isNull(object) || NULL.equals(object))
 			return null;
 		this.isPretty.set(isPretty);
 		String result = null;
@@ -199,7 +199,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 			 .array(this::arrayToJson)
 			 .map(map -> {
 				 StringBuilder mapJson = new StringBuilder();
-				 mapJson.append((char) LEFT_BIG_PARANTHESES);
+				 mapJson.append((char) LEFT_BIG_PARENTHESES);
 				 if (isPretty.get()) {
 					 mapJson.append(Consts.CRLF);
 					 indent.get().getAndIncrement();
@@ -215,7 +215,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 
 					 addCRLF(mapJson);
 				 });
-				 deleteUnnecessary(mapJson, (char) RIGHT_BIG_PARANTHESES);
+				 deleteUnnecessary(mapJson, (char) RIGHT_BIG_PARENTHESES);
 				 return mapJson.toString();
 			 })
 			 .bigDecimal(bigDecimal -> {
@@ -269,7 +269,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 		AtomicBoolean isCameCase          = new AtomicBoolean(false);
 		AtomicBoolean isNoneSerializeNull = new AtomicBoolean(false);
 		Class<?>      aClass              = object.getClass();
-		json.append((char) LEFT_BIG_PARANTHESES);
+		json.append((char) LEFT_BIG_PARENTHESES);
 
 		// 如果类上标注了@NoneSerializeNull则属性值为null时忽略
 		// Ignore if the attribute value is null if @NoneSerializeNull is marked on the class
@@ -365,7 +365,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 					  }
 				  });
 
-		deleteUnnecessary(json, (char) RIGHT_BIG_PARANTHESES);
+		deleteUnnecessary(json, (char) RIGHT_BIG_PARENTHESES);
 		return json.toString();
 	}
 
@@ -415,7 +415,7 @@ public class JsonEncoder<T> implements JsonSupport<T> {
 		if (isAddQuotation)
 			json.append((char) DOUBLE_QUOTE);
 		if (Objects.isNull(value)) {
-			json.append("null");
+			json.append(NULL);
 		} else if ("".equals(value)) {
 			json.append("\"\"");
 		} else {

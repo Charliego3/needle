@@ -3,9 +3,14 @@ package io.github.kits;
 import io.github.kits.configuration.TypeFunctionConfig;
 import io.github.kits.enums.FunctionType;
 import io.github.kits.exception.TypeException;
+import io.github.kits.json.Json;
+import io.github.kits.log.Logger;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,6 +41,8 @@ import static io.github.kits.enums.FunctionType.SYSTEM;
  * @since 1.0.0
  */
 public class Types {
+
+	public static final String[] basicArrName = {"[S", "[I", "[J", "[F", "[D", "[Z"};
 
 	public static <T, R> R function(T object, TypeFunctionConfig<T, R> config) {
 		if (Objects.isNull(object)) {
@@ -111,11 +118,40 @@ public class Types {
 				r = (R) new BigDecimal(object.toString());
 			}
 		} else if (target.isArray()) {
-
+			if (object.getClass().isArray()) {
+				r = array(object, target);
+			} else {
+				if (target.getComponentType().isPrimitive()) {
+					Object arr = Array.newInstance(target.getComponentType(), 1);
+					Array.set(arr, 0, object);
+					r = (R) arr;
+				} else {
+					String name = target.getName();
+					if (Strings.isNotBlack(name)) {
+						name = name.substring(2);
+						name = name.substring(0, name.length() - 1);
+					}
+					try {
+						Object arr = Array.newInstance(Envs.forName(name), 1);
+						Array.set(arr, 0, object);
+						r = (R) arr;
+					} catch (ClassNotFoundException e) {
+						Logger.error("Cast Object Array is error", e);
+					}
+				}
+			}
 		} else if (Class.class.isAssignableFrom(target)) {
 
 		} else if (Boolean.class.isAssignableFrom(target)) {
-
+			if (object instanceof Boolean) {
+				r = (R) object;
+			} else {
+				boolean b = false;
+				if (Strings.isBoolean(object.toString())) {
+					b = Boolean.parseBoolean(object.toString());
+				}
+				r = (R) Boolean.valueOf(b);
+			}
 		} else if (Number.class.isAssignableFrom(target) && !(Byte.class.isAssignableFrom(target))) {
 
 		}
@@ -132,6 +168,72 @@ public class Types {
 			r = (R) object;
 		}
 		return r;
+	}
+
+	private static <T> T array(Object object, Class<T> tClass) {
+		int length = Array.getLength(object);
+		Object result = null;
+//		switch (tClass.getName()) {
+//			case "[S":
+//				result = new short[length];
+//				break;
+//			case "[Ljava.lang.Short;":
+//				result = new Short[length];
+//				break;
+//			case "[I":
+//				result = new int[length];
+//				break;
+//			case "[Ljava.lang.Integer;":
+//				result = new Integer[length];
+//				break;
+//			case "[J":
+//				result = new long[length];
+//				break;
+//			case "[Ljava.lang.Long;":
+//				result = new Long[length];
+//				break;
+//			case "[F":
+//				result = new float[length];
+//				break;
+//			case "[Ljava.lang.Float;":
+//				result = new Float[length];
+//				break;
+//			case "[D":
+//				result = new double[length];
+//				break;
+//			case "[Ljava.lang.Double;":
+//				result = new Double[length];
+//				break;
+//			case "[Z":
+//				result = new boolean[length];
+//				break;
+//			case "[Ljava.lang.Boolean;":
+//				result = new Boolean[length];
+//				break;
+//			case "[C":
+//				result = new char[length];
+//				break;
+//			case "[Ljava.lang.Character;":
+//				result = new Character[length];
+//				break;
+//			case "[B":
+//				result = new byte[length];
+//				break;
+//			case "[Ljava.lang.Byte;":
+//				result = new Byte[length];
+//				break;
+//		}
+		result = Array.newInstance(tClass.getComponentType(), length);
+//		if (Objects.nonNull(result)) {
+			for (int i = 0; i < length; i++) {
+				Array.set(result, i, Array.get(object, i));
+			}
+//		}
+		return (T) result;
+	}
+
+	private static<T> T object(Object object, Class<T> tClass) {
+		return null;
 	}
 
 }

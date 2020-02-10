@@ -10,14 +10,14 @@ public interface JsonTokenKind {
 	String NULL = "null";
 
 	/**
-	 * Left Big Parantheses '{'
+	 * Left Big Parentheses '{'
 	 */
-	byte LEFT_BIG_PARANTHESES = 123;
+	byte LEFT_BIG_PARENTHESES = 123;
 
 	/**
-	 * Right Big Parantheses '}'
+	 * Right Big Parentheses '}'
 	 */
-	byte RIGHT_BIG_PARANTHESES = 125;
+	byte RIGHT_BIG_PARENTHESES = 125;
 
 	/**
 	 * Left Bracket '['

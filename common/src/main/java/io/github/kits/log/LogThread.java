@@ -25,11 +25,11 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class LogThread implements Runnable {
 
 	private static OutputStream[]               outputStreams;
-	private static LinkedBlockingDeque<LogBody> queue;
-	private static LogThread                    logThread;
+	private static final LinkedBlockingDeque<LogBody> queue;
+	private static final LogThread                    logThread;
 	private static Thread                       mainThread;
 	private static String                       logPath;
-	private static String                       type;
+	private static final String                       type;
 
 	static {
 		logThread = new LogThread();
@@ -43,7 +43,7 @@ public class LogThread implements Runnable {
 		outputStreams = outputStream;
 	}
 
-	static void addBody(LogBody logBody) {
+	public static void addBody(LogBody logBody) {
 		queue.add(logBody);
 	}
 
@@ -64,7 +64,8 @@ public class LogThread implements Runnable {
 					}
 					op(message);
 					//如果主线程结束,则日志线程也退出
-					if (mainThread == null) {
+					if (mainThread == null && queue.isEmpty()) {
+						Envs.sleep(1000);
 						break;
 					}
 				} catch (Exception e) {

@@ -1,6 +1,6 @@
 package io.github.kits.agent;
 
-import io.github.kits.LambdaExes;
+import io.github.kits.Lambdas;
 import io.github.kits.PropertiesKit;
 import io.github.kits.Strings;
 import io.github.kits.annotations.Value;
@@ -34,7 +34,7 @@ public class ValueAgent {
 
 	public static byte[] value(ClassPool cp, CtClass ctClass, List<CtField> ctFields) {
 		try {
-			ctFields.forEach(LambdaExes.rethrowConsumer(ctField -> {
+			ctFields.forEach(Lambdas.rethrowConsumer(ctField -> {
 				Value valueAnn = (Value) ctField.getAnnotation(Value.class);
 				cp.importPackage(PropertiesKit.class.getCanonicalName());
 				setValueBody(ctClass, ctField, valueAnn);
@@ -137,7 +137,7 @@ public class ValueAgent {
 		CtConstructor[] declaredConstructors = ctClass.getDeclaredConstructors();
 		if (Objects.nonNull(declaredConstructors)) {
 			Stream.of(declaredConstructors)
-				  .forEach(LambdaExes.rethrowConsumer(
+				  .forEach(Lambdas.rethrowConsumer(
 						  ctConstructor -> {
 							  String pValue = getValue(ctField, value);
 							  ctConstructor.insertAfter("this." + ctField.getName() + pValue);

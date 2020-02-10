@@ -16,7 +16,7 @@ import java.util.function.Function;
  */
 public class TypeFunctionConfig<T, R> {
 
-	private Map<FunctionType, Function> functionMap;
+	private Map<FunctionType, Function<T, R>> functionMap;
 
 	public static<T, R> Builder<T, R> builder() {
 		return new Builder<>(newInstance());

@@ -23,13 +23,13 @@ import static io.github.kits.json.tokenizer.JsonTokenKind.EIGHT;
 import static io.github.kits.json.tokenizer.JsonTokenKind.F;
 import static io.github.kits.json.tokenizer.JsonTokenKind.FIVE;
 import static io.github.kits.json.tokenizer.JsonTokenKind.FOUR;
-import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BIG_PARANTHESES;
+import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BIG_PARENTHESES;
 import static io.github.kits.json.tokenizer.JsonTokenKind.LEFT_BRACKET;
 import static io.github.kits.json.tokenizer.JsonTokenKind.N;
 import static io.github.kits.json.tokenizer.JsonTokenKind.NEGATIVE;
 import static io.github.kits.json.tokenizer.JsonTokenKind.NINE;
 import static io.github.kits.json.tokenizer.JsonTokenKind.ONE;
-import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BIG_PARANTHESES;
+import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BIG_PARENTHESES;
 import static io.github.kits.json.tokenizer.JsonTokenKind.RIGHT_BRACKET;
 import static io.github.kits.json.tokenizer.JsonTokenKind.SEVEN;
 import static io.github.kits.json.tokenizer.JsonTokenKind.SIX;
@@ -83,10 +83,10 @@ public class JsonTokenizer implements Serializable {
 		while (this.charReader.hasMore()) {
 			byte next = next();
 			switch (next) {
-				case LEFT_BIG_PARANTHESES:
+				case LEFT_BIG_PARENTHESES:
 				case LEFT_BRACKET: {
 					String subJson;
-					if (next == LEFT_BIG_PARANTHESES && isFirstObject && isJsonObject) {
+					if (next == LEFT_BIG_PARENTHESES && isFirstObject && isJsonObject) {
 						isFirstObject = false;
 						continue;
 					} else if (next == LEFT_BRACKET && isFirstArray && !isJsonObject) {
@@ -94,7 +94,7 @@ public class JsonTokenizer implements Serializable {
 						continue;
 					}
 
-					if (next == LEFT_BIG_PARANTHESES) {
+					if (next == LEFT_BIG_PARENTHESES) {
 						subJson = subObjectJson();
 					} else {
 						subJson = subArrayJson();
@@ -102,7 +102,7 @@ public class JsonTokenizer implements Serializable {
 					value = newInstance().tokenize(subJson);
 					break;
 				}
-				case RIGHT_BIG_PARANTHESES:
+				case RIGHT_BIG_PARENTHESES:
 				case RIGHT_BRACKET: {
 					if (Envs.isNotNullEmptyBlack(kv[0]) && isJsonObject) {
 						jsonPath.put(kv[0], kv[1]);
@@ -179,14 +179,14 @@ public class JsonTokenizer implements Serializable {
 	}
 
 	private String subObjectJson() throws IOException {
-		return subJson(LEFT_BIG_PARANTHESES);
+		return subJson(LEFT_BIG_PARENTHESES);
 	}
 
 	private String subJson(byte parentheses) throws IOException {
 		int leftParenthesesCount = 1, rightParenthesesCount = 0;
 		boolean isString = false;
 		StringBuilder json = new StringBuilder();
-		byte rightParentheses = RIGHT_BIG_PARANTHESES;
+		byte rightParentheses = RIGHT_BIG_PARENTHESES;
 		if (parentheses == LEFT_BRACKET) {
 			rightParentheses = RIGHT_BRACKET;
 		}
