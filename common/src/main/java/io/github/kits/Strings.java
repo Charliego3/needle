@@ -21,6 +21,8 @@ import java.util.stream.Stream;
  */
 public class Strings {
 
+	public static final String NULL = "null";
+
 	/**
 	 * 常用到的字符
 	 * 0-9

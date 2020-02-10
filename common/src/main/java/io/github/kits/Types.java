@@ -158,35 +158,28 @@ public class Types {
 	 * @return 新构建的数组
 	 */
 	private static <T> T array(Object object, Class<T> tClass) {
-		T t = null;
+		Object arr = null;
 		if (object.getClass().isArray()) {
 			int length = Array.getLength(object);
-			Object result = Array.newInstance(tClass.getComponentType(), length);
+			arr = Array.newInstance(tClass.getComponentType(), length);
 			for (int i = 0; i < length; i++) {
-				Array.set(result, i, Array.get(object, i));
+				Array.set(arr, i, Array.get(object, i));
 			}
-			t = (T) result;
 		} else {
 			if (tClass.getComponentType().isPrimitive()) {
-				Object arr = Array.newInstance(tClass.getComponentType(), 1);
-				Array.set(arr, 0, object);
-				t = (T) arr;
+				arr = Array.newInstance(tClass.getComponentType(), 1);
 			} else {
 				String name = tClass.getName();
 				if (Strings.isNotBlack(name)) {
 					name = name.substring(2);
 					name = name.substring(0, name.length() - 1);
 				}
-				try {
-					Object arr = Array.newInstance(Envs.forName(name), 1);
-					Array.set(arr, 0, object);
-					t = (T) arr;
-				} catch (ClassNotFoundException e) {
-					Logger.error("Cast Object Array is error", e);
-				}
+				name += "ss";
+				arr = Array.newInstance(Envs.forName(name), 1);
 			}
+			Array.set(arr, 0, object);
 		}
-		return t;
+		return (T) arr;
 	}
 
 	private static <T> T object(Object object, Class<T> tClass) {

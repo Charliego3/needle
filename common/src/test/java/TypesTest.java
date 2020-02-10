@@ -15,7 +15,7 @@ public class TypesTest extends TestCase {
 		Integer[] type = Types.type(arr, Integer[].class);
 		System.out.println(Arrays.toString(type));
 		Logger.infof("Types.type: {}", 1, 2, 3);
-		Logger.infof("Types.type: {}{}", "ss", type);
+		Logger.infof("Types.type: {} - {}", "ss", type);
 		Logger.infof("Types.type: {}", type);
 		Logger.infof("Types.type: {}", type);
 		Logger.infof("Types.type: {}", type);

@@ -286,11 +286,11 @@ public class Envs {
 	 * @param className 类名称
 	 * @return 加载的Class
 	 */
-	public static Class<?> forName(String className) throws ClassNotFoundException {
+	public static Class<?> forName(String className) {
 		try {
 			return Class.forName(className);
 		} catch (Exception ex) {
-			throw new ClassNotFoundException("load and define, Class: [" + className + "] failed");
+			throw new RuntimeException("Class NotFund, Class: [" + className + "] failed");
 		}
 	}
 
