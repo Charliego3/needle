@@ -4,6 +4,7 @@ import io.github.kits.json.Json;
 import io.github.kits.json.JsonPath;
 import junit.framework.TestCase;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class MapsTest extends TestCase {
@@ -25,6 +26,23 @@ public class MapsTest extends TestCase {
 		JsonPath jsonPath = Json.jsonPath("{\"name\": \"whim then\", \"age\": 1, \"operation\": {\"func\": \"get\"}}");
 		Map<Object, Object> map1 = Maps.toMap(jsonPath);
 		System.out.println(map1);
+	}
+
+	public void testRemoveNullNodeMap() {
+		HashMap<Object, Object> map = new HashMap<>();
+		map.put("10", 1);
+		map.put("9", 2);
+		map.put("dbdfgdfg", 1);
+		map.put("1", 3);
+		map.put(null, 1);
+		map.put("xcvx", null);
+		map.put(null, 3);
+		System.out.println(map);
+
+		Maps.removeNullNode(map);
+		Maps.removeNullKeyNode(map);
+		Maps.removeNullValueNode(map);
+		System.out.println(map);
 	}
 
 }

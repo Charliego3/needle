@@ -34,14 +34,11 @@ public class Envs {
 			return true;
 		}
 		for (Object obj : objects) {
-			if (Objects.isNull(obj)) {
+			if (Objects.isNull(obj) ||
+					((obj instanceof CharSequence) &&
+						 ((isBlack && Strings.isBlack((String) obj))
+							  || Strings.isNullOrEmpty((String) obj)))) {
 				return true;
-			} else if (obj instanceof CharSequence) {
-				if (isBlack) {
-					return Strings.isBlack((String) obj);
-				} else {
-					return Strings.isNullOrEmpty((String) obj);
-				}
 			}
 		}
 		return false;
