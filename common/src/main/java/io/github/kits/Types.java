@@ -152,7 +152,7 @@ public class Types {
 	/**
 	 * 构建新数组，并将object的值放入新数组中
 	 *
-	 * @param object 数组对象
+	 * @param object 对象
 	 * @param tClass 需要转换的目标对象类型
 	 * @param <T>    范型
 	 * @return 新构建的数组

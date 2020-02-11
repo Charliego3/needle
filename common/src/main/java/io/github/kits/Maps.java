@@ -1,10 +1,11 @@
 package io.github.kits;
 
-import io.github.kits.json.Json;
+import io.github.kits.exception.ConvertException;
 
-import java.util.Arrays;
-import java.util.Date;
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,7 +23,7 @@ public class Maps {
      * @param map Map
      * @return Boolean
      */
-    public static boolean isNullOrEmpty(Map map) {
+    public static<K,V> boolean isNullOrEmpty(Map<K,V> map) {
         return map == null || map.isEmpty();
     }
 
@@ -32,45 +33,8 @@ public class Maps {
      * @param map Map
      * @return Boolean
      */
-    public static boolean isNotNullOrEmpty(Map map) {
+    public static<K,V> boolean isNotNullOrEmpty(Map<K,V> map) {
         return !isNullOrEmpty(map);
-    }
-
-    /**
-     * 将map转换为json
-     *
-     * @param map   任意map
-     * @return      转换后的结果
-     */
-    public static String toJSON(Map<?, ?> map) {
-        StringBuilder jsonString = new StringBuilder("{");
-        if (isNullOrEmpty(map)) {
-            return "null";
-        }
-        map.forEach((key, value) -> {
-            if (isStringOrDate(key)) {
-                jsonString.append("\"").append(Json.toJson(key)).append("\"");
-            } else {
-                jsonString.append(Json.toJson(key));
-            }
-            if (isStringOrDate(value)) {
-                jsonString.append(": \"").append(Json.toJson(value)).append("\"");
-            } else {
-                jsonString.append(": ").append(Json.toJson(value));
-            }
-            jsonString.append(", ");
-        });
-        return jsonString.deleteCharAt(jsonString.lastIndexOf(",")).deleteCharAt(jsonString.lastIndexOf(" ")).append("}").toString();
-    }
-
-    /**
-     * 判断是否是String或Date类型
-     *
-     * @param object    需要判断的对象
-     * @return          是(true)
-     */
-    private static boolean isStringOrDate(Object object) {
-        return object instanceof CharSequence || object instanceof Character || object instanceof Date;
     }
 
     /**
@@ -79,7 +43,7 @@ public class Maps {
      * @param objs String
      * @return Map
      */
-    public static Map asMap(Object... objs) {
+    public static Map<Object, Object> asMap(Object... objs) {
         Map<Object, Object> map = new LinkedHashMap<>();
         for(int i = 1; i < objs.length; i += 2) {
             map.put(objs[i - 1], objs[i]);
@@ -87,16 +51,27 @@ public class Maps {
         return map;
     }
 
-    public static Map<Object, Object> jsonToMap(String json, String path) {
-        Assert.isNotNullEmptyBlack(json, "Json string is null or empty!");
-        boolean isAll = false;
-        if (Strings.isBlack(path) || Arrays.asList(".", "/").contains(path)) {
-            isAll = true;
+    /**
+     * 将对象字段封装为Map
+     *
+     * @param object 需要转换的对象
+     * @return 转换后的Map
+     */
+    public static Map<Object, Object> toMap(Object object) {
+        Assert.isNotNull(object, new ConvertException("Object is null"));
+        Assert.isTrue(!(Envs.isBasicType(object.getClass()) && Envs.isSystemType(object.getClass())),
+            new ConvertException(object.getClass().getName() + " is not support convert to Map. "));
+        if (object instanceof Map)
+            return (Map<Object, Object>) object;
+        HashMap<Object, Object> map = new HashMap<>();
+        List<Field> fields = Reflective.getFields(object.getClass());
+        if (Lists.isNotNullOrEmpty(fields)) {
+            fields.forEach(field -> {
+                Object value = Reflective.getFieldValue(object, field);
+                map.put(field.getName(), value);
+            });
         }
-
-
-
-        return null;
+        return map;
     }
 
 }
