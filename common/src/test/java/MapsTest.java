@@ -29,7 +29,7 @@ public class MapsTest extends TestCase {
 	}
 
 	public void testRemoveNullNodeMap() {
-		HashMap<Object, Object> map = new HashMap<>();
+		HashMap<String, Integer> map = new HashMap<>();
 		map.put("10", 1);
 		map.put("9", 2);
 		map.put("dbdfgdfg", 1);
@@ -43,6 +43,12 @@ public class MapsTest extends TestCase {
 		Maps.removeNullKeyNode(map);
 		Maps.removeNullValueNode(map);
 		System.out.println(map);
+
+		Map<String, Integer> sortByKey = Maps.sortByKey(map);
+		System.out.println(sortByKey);
+
+		Map<String, Integer> sortByValue = Maps.sortByValue(map);
+		System.out.println(sortByValue);
 	}
 
 }

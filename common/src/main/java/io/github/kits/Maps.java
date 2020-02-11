@@ -26,7 +26,7 @@ public class Maps {
      * @param map Map
      * @return Boolean
      */
-    public static<K,V> boolean isNullOrEmpty(Map<K,V> map) {
+    public static<K, V> boolean isNullOrEmpty(Map<K, V> map) {
         return map == null || map.isEmpty();
     }
 
@@ -36,7 +36,7 @@ public class Maps {
      * @param map Map
      * @return Boolean
      */
-    public static<K,V> boolean isNotNullOrEmpty(Map<K,V> map) {
+    public static<K, V> boolean isNotNullOrEmpty(Map<K, V> map) {
         return !isNullOrEmpty(map);
     }
 
