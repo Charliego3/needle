@@ -33,14 +33,17 @@ public class Envs {
 		if (Objects.isNull(objects) || objects.length == 0) {
 			return true;
 		}
-		for (Object obj : objects) {
+		int i = 0;
+		do {
+			Object obj = objects[i];
 			if (Objects.isNull(obj) ||
 					((obj instanceof CharSequence) &&
 						 ((isBlack && Strings.isBlack((String) obj))
 							  || Strings.isNullOrEmpty((String) obj)))) {
 				return true;
 			}
-		}
+			i++;
+		} while (i < objects.length);
 		return false;
 	}
 

@@ -1,6 +1,5 @@
 package io.github.kits;
 
-import io.github.kits.exception.JsonParseException;
 import io.github.kits.exception.ReflectiveException;
 import io.github.kits.log.Logger;
 
@@ -101,32 +100,46 @@ public class Reflective {
 	 * @throws InstantiationException 实例化异常
 	 * @throws InvocationTargetException 调用目标异常
 	 */
-	public static <T> T instance(Object target) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-		if (Envs.isBasicType(target.getClass()) || Envs.isSystemType(target.getClass()))
-			if (target.getClass().isInterface()) {
-				if (List.class.isAssignableFrom(target.getClass()))
-					return (T) new ArrayList();
-				else if (Map.class.isAssignableFrom(target.getClass()))
-					return (T) new HashMap();
-			} else
-				return (T) target.getClass().newInstance();
+	public static <T> T newInstance(Class<T> target) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+		T instance = null;
+		if (Envs.isBasicType(target) || Envs.isSystemType(target)) {
+			if (target.isInterface()) {
+				if (List.class.isAssignableFrom(target)) {
+					@SuppressWarnings("unchecked")
+					T t = (T) new ArrayList<>();
+					instance = t;
+				} else if (Map.class.isAssignableFrom(target)) {
+					@SuppressWarnings("unchecked")
+					T t = (T) new HashMap<>();
+					instance = t;
+				}
+			} else {
+				return target.newInstance();
+			}
+		}
+
+		if (Objects.nonNull(instance)) {
+			return instance;
+		}
 
 		Constructor<?> constructor =
-			Arrays.stream(target.getClass().getDeclaredConstructors())
+			Arrays.stream(target.getDeclaredConstructors())
 				  .min(Comparator.comparingInt(v -> v.getParameterTypes().length))
 				  .orElseThrow(() -> new NullPointerException("No Constructor, Class: "
-																  + target.getClass().getCanonicalName()));
+																  + target.getCanonicalName()));
 
 		Class<?>[] parameterTypes = constructor.getParameterTypes();
 		Object[] params = new Object[parameterTypes.length];
 		for (int i = 0; i < parameterTypes.length; i++) {
 			Class<?> type = parameterTypes[i];
-			params[i] = instance(type);
+			params[i] = newInstance(type);
 		}
 
 		boolean accessible = constructor.isAccessible();
 		constructor.setAccessible(true);
-		T instance = (T) constructor.newInstance(params);
+		@SuppressWarnings("unchecked")
+		T t = (T) constructor.newInstance(params);
+		instance = t;
 		constructor.setAccessible(accessible);
 		return instance;
 	}

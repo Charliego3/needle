@@ -9,7 +9,7 @@ public class ReflectiveTests extends TestCase {
 	public void testNewInstance() throws IllegalAccessException, InvocationTargetException, InstantiationException {
 		User user = new User();
 
-		User instance = Reflective.instance(user);
+		User instance = Reflective.newInstance(User.class);
 		System.out.println(instance);
 	}
 

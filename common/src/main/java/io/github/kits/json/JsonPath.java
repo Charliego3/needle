@@ -27,7 +27,9 @@ public class JsonPath extends HashMap<Object, Object> implements JsonKind {
 
 	public <T> T get(String key, Class<T> target) {
 		if (JsonPath.class.isAssignableFrom(target)) {
-			return (T) this;
+			@SuppressWarnings("unchecked")
+			T t = (T) this;
+			return t;
 		}
 		Object   value;
 		boolean  isAllValue = false;
@@ -50,16 +52,20 @@ public class JsonPath extends HashMap<Object, Object> implements JsonKind {
 
 	private Object getPathValue(String[] paths) {
 		Object tempJson = this;
-		for (int i = 0; i < paths.length; i++) {
+		int i = 0;
+		do {
 			if (Objects.nonNull(tempJson)) {
 				if (tempJson instanceof Map) {
-					tempJson = ((Map) tempJson).get(paths[i]);
+					@SuppressWarnings("unchecked")
+					Object tj = ((Map<Object, Object>) tempJson).get(paths[i]);
+					tempJson = tj;
 				}
 			}
 			if (i == paths.length - 1) {
 				return tempJson;
 			}
-		}
+			i++;
+		} while (i < paths.length);
 		return null;
 	}
 

@@ -65,13 +65,14 @@ public class Strings {
 		if (Objects.isNull(resource) || resource.length == 0) {
 			return true;
 		}
-		if (resource.length == 1)
-			return Objects.isNull(resource[0]) || (isBlack ? resource[0].trim().isEmpty() : resource[0].isEmpty());
-		for (String val : resource) {
-			if (Objects.isNull(val) || (isBlack ? val.trim().isEmpty() : val.isEmpty())) {
+		int i = 0;
+		do {
+			String single = resource[i];
+			if (Objects.isNull(single) || (isBlack ? single.trim().isEmpty() : single.isEmpty())) {
 				return true;
 			}
-		}
+			i++;
+		} while (i < resource.length);
 		return false;
 	}
 
@@ -96,11 +97,11 @@ public class Strings {
 	}
 
 	public static boolean isNullString(String resource) {
-		return isNotBlack(resource) && "NULL".equalsIgnoreCase(resource.trim());
+		return isNotBlack(resource) && NULL.equalsIgnoreCase(resource.trim());
 	}
 
 	public static boolean isNotNullString(String resource) {
-		return isNotBlack(resource) && !"NULL".equalsIgnoreCase(resource.trim());
+		return isNotBlack(resource) && !NULL.equalsIgnoreCase(resource.trim());
 	}
 
 	/**

@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -96,16 +96,19 @@ public class Serializes {
 			return null;
 		}
 		Class<?> aClass = object.getClass();
-		return Json.toJson(Maps.asMap(JSON_SERIALIZE_TYPE, aClass.getCanonicalName(),
-			JSON_SERIALIZE_VALUE, Json.toJson(object))).getBytes();
+		return Json.toJson(Maps.asMap(JSON_SERIALIZE_TYPE, aClass.getName(),
+			JSON_SERIALIZE_VALUE, object)).getBytes(StandardCharsets.UTF_8);
 	}
 
 	public static <T> T jsonUnSerialize(byte[] bytes) {
+		String jsonString = new String(bytes, StandardCharsets.UTF_8);
 		try {
-			JsonPath jsonPath = Json.jsonPath(new String(bytes));
-//			return (T) Json.toObject(map.get(JSON_SERIALIZE_VALUE).toString(),
-//				Class.forName(map.get(JSON_SERIALIZE_TYPE).toString()));
-			return null;
+			JsonPath jsonPath = Json.jsonPath(jsonString);
+			String className = jsonPath.get(JSON_SERIALIZE_TYPE, String.class);
+			Class<?> aClass = Envs.forName(className);
+			@SuppressWarnings("unchecked")
+			T t = (T) jsonPath.get(JSON_SERIALIZE_VALUE, aClass);
+			return t;
 		} catch (Exception e) {
 			Logger.error("Json UnSerialize error", e);
 			return null;
