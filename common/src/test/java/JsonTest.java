@@ -21,6 +21,11 @@ public class JsonTest extends TestCase {
 //		JsonPath jsonPath = JsonPath.newInstance("{\"user\": \"whimthen\", \"age\": 34}");
 		JsonPath jsonPath = Json.jsonPath("{\"name\": \"whim then\", \"age\": 1, \"operation\": {\"func\": \"get\"}}");
 		System.out.println(jsonPath.get("/operation/func", String.class));
+
+
+		JsonPath jp = Json.jsonPath("{\"name\": \"whim then\", \"age\": 1, \"operation\": [\"GET\", \"UPDATE\", \"DELETE\", \"INSERT\"]}");
+		Integer[] strings = jp.get("/age", Integer[].class);
+		System.out.println(Arrays.toString(strings));
 	}
 
 	public void testJson() {

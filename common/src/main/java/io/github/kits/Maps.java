@@ -1,6 +1,7 @@
 package io.github.kits;
 
 import io.github.kits.exception.ConvertException;
+import io.github.kits.json.Json;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -75,6 +76,11 @@ public class Maps {
             });
         }
         return map;
+    }
+
+    public static Map<Object, Object> jsonToMap(String json) {
+        Assert.isTrue(Json.isJsonObject(json), "String is not JsonObject");
+        return Json.toObject(json, Map.class);
     }
 
     /**

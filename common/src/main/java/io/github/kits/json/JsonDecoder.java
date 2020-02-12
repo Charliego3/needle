@@ -35,7 +35,7 @@ public class JsonDecoder<T> implements JsonSupport<T> {
 	public <V> V jsonPath(String json, String path, Class<V> target) {
 		Assert.isNotNull(target, "Target Class is null!");
 		Assert.isTrue(Json.isJsonObject(json),
-			new JsonParseException("Json Array does not support path acquisition! Json: " + json));
+			new JsonParseException("JsonString does not support path acquisition! Json: " + json));
 		try {
 			JsonKind tokenize = tokenizer.tokenize(json);
 			if (tokenize instanceof JsonPath) {

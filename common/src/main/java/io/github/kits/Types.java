@@ -159,24 +159,32 @@ public class Types {
 	 */
 	private static <T> T array(Object object, Class<T> tClass) {
 		Object arr = null;
-		if (object.getClass().isArray()) {
+		if (Objects.isNull(object)) {
+			arr = Array.newInstance(tClass.getComponentType(), 0);
+		} else if (object.getClass().isArray() || object instanceof Collection) {
+			if (object instanceof Collection) {
+				object = ((Collection) object).toArray();
+			}
 			int length = Array.getLength(object);
 			arr = Array.newInstance(tClass.getComponentType(), length);
 			for (int i = 0; i < length; i++) {
 				Array.set(arr, i, Array.get(object, i));
 			}
 		} else {
-			if (tClass.getComponentType().isPrimitive()) {
-				arr = Array.newInstance(tClass.getComponentType(), 1);
-			} else {
+			Class<?> singleArrType = tClass.getComponentType();
+			if (!tClass.getComponentType().isPrimitive()) {
 				String name = tClass.getName();
 				if (Strings.isNotBlack(name)) {
 					name = name.substring(2);
 					name = name.substring(0, name.length() - 1);
 				}
-				name += "ss";
-				arr = Array.newInstance(Envs.forName(name), 1);
+				singleArrType = Envs.forName(name);
+				if (!singleArrType.isAssignableFrom(object.getClass())) {
+					throw new TypeException("array element type mismatch: " + object.getClass().getName()
+												+ " for array type: " + tClass.getName());
+				}
 			}
+			arr = Array.newInstance(singleArrType, 1);
 			Array.set(arr, 0, object);
 		}
 		return (T) arr;
