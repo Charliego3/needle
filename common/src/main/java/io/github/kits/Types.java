@@ -3,23 +3,20 @@ package io.github.kits;
 import io.github.kits.configuration.TypeFunctionConfig;
 import io.github.kits.enums.FunctionType;
 import io.github.kits.exception.TypeException;
-import io.github.kits.json.Json;
+import io.github.kits.json.annotations.IgnoreJsonSerialize;
+import io.github.kits.json.annotations.JsonCamelCase;
+import io.github.kits.json.annotations.JsonSerializeName;
 import io.github.kits.log.Logger;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
 
 import static io.github.kits.enums.FunctionType.ARRAY;
 import static io.github.kits.enums.FunctionType.BASIC;
@@ -90,46 +87,45 @@ public class Types {
 		if (Objects.isNull(object)) {
 			return null;
 		}
-		R r = null;
+		Object instance = null;
+		try {
+			instance = Reflective.newInstance(target);
+		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+			Logger.errorf("Type convert error", e);
+		}
 		if (Collection.class.isAssignableFrom(target)) {
-			if (List.class.isAssignableFrom(target)) {
-				ArrayList<Object> objects = new ArrayList<>();
-				objects.add(object);
-				r = (R) objects;
-			} else if (Set.class.isAssignableFrom(target)) {
-				HashSet<Object> objects = new HashSet<>();
-				objects.add(object);
-				r = (R) objects;
+			if (object instanceof Collection) {
+				instance = object;
+			} else {
+				@SuppressWarnings("unchecked")
+				Collection<Object> collection = (Collection<Object>) instance;
+				if (Lists.isNotNullOrEmpty(collection)) collection.add(object);
 			}
 		} else if (Map.class.isAssignableFrom(target)) {
-			HashMap<Object, Object> maps = new HashMap<>();
-			maps.put("", object);
-			r = (R) maps;
+			if (object instanceof Map) {
+				instance = object;
+			} else {
+				@SuppressWarnings("unchecked")
+				Map<Object, Object> map = (Map<Object, Object>) instance;
+				if (Objects.nonNull(map)) map.put(null, object);
+			}
 		} else if (Date.class.isAssignableFrom(target)) {
-			if (object instanceof Date) {
-				r = (R) object;
-			} else {
-				r = (R) DateTimes.get(object.toString());
-			}
+			instance = object instanceof Date ? object : DateTimes.get(object.toString());
 		} else if (BigDecimal.class.isAssignableFrom(target)) {
-			if (object instanceof BigDecimal) {
-				r = (R) object;
-			} else {
-				r = (R) new BigDecimal(object.toString());
-			}
+			instance = object instanceof BigDecimal ? object : new BigDecimal(object.toString());
 		} else if (target.isArray()) {
-			r = array(object, target);
+			instance = array(object, target);
 		} else if (Class.class.isAssignableFrom(target)) {
-
+			instance = target;
 		} else if (Boolean.class.isAssignableFrom(target)) {
 			if (object instanceof Boolean) {
-				r = (R) object;
+				instance = object;
 			} else {
 				boolean b = false;
 				if (Strings.isBoolean(object.toString())) {
 					b = Boolean.parseBoolean(object.toString());
 				}
-				r = (R) Boolean.valueOf(b);
+				instance = b;
 			}
 		} else if (Number.class.isAssignableFrom(target) && !(Byte.class.isAssignableFrom(target))) {
 
@@ -142,11 +138,50 @@ public class Types {
 		else if (Enum.class.isAssignableFrom(target)) {
 
 		} else if (CharSequence.class.isAssignableFrom(target) || Character.class.isAssignableFrom(target)) {
-			r = (R) object.toString();
+			instance = object.toString();
 		} else {
-			r = (R) object;
+			object(object, instance);
 		}
+		@SuppressWarnings("unchecked")
+		R r = (R) instance;
 		return r;
+	}
+
+	private static void object(Object object, Object target) {
+		Map<Object, Object> resource = null;
+		if (Objects.nonNull(object)) {
+			if (object instanceof Map) {
+				@SuppressWarnings("unchecked")
+				Map<Object, Object> map = (Map<Object, Object>) object;
+				resource = map;
+			} else {
+				resource = Maps.toMap(object);
+			}
+		}
+		Map<Object, Object> finalResource = resource;
+		if (Envs.isNotNullEmptyBlack(finalResource, target)) {
+			List<Field> fields = Reflective.getFields(target.getClass());
+			if (Lists.isNotNullOrEmpty(fields)) {
+				fields.forEach(field -> {
+					IgnoreJsonSerialize annotation = field.getAnnotation(IgnoreJsonSerialize.class);
+					if (Objects.nonNull(annotation)) {
+						return;
+					}
+					String fieldName = field.getName();
+					JsonSerializeName serializeName = field.getAnnotation(JsonSerializeName.class);
+					if (Objects.nonNull(serializeName)) {
+						fieldName = serializeName.value();
+					} else {
+						JsonCamelCase camelCase = field.getAnnotation(JsonCamelCase.class);
+						if (Objects.nonNull(camelCase)) {
+							fieldName = Strings.unCameCase(fieldName);
+						}
+					}
+					Object value = finalResource.get(fieldName);
+					Reflective.setFieldValue(target, field, value);
+				});
+			}
+		}
 	}
 
 	/**
@@ -163,7 +198,9 @@ public class Types {
 			arr = Array.newInstance(tClass.getComponentType(), 0);
 		} else if (object.getClass().isArray() || object instanceof Collection) {
 			if (object instanceof Collection) {
-				object = ((Collection) object).toArray();
+				@SuppressWarnings("unchecked")
+				Collection<Object> collection = (Collection<Object>) object;
+				object = collection.toArray();
 			}
 			int length = Array.getLength(object);
 			arr = Array.newInstance(tClass.getComponentType(), length);
@@ -187,11 +224,9 @@ public class Types {
 			arr = Array.newInstance(singleArrType, 1);
 			Array.set(arr, 0, object);
 		}
-		return (T) arr;
-	}
-
-	private static <T> T object(Object object, Class<T> tClass) {
-		return null;
+		@SuppressWarnings("unchecked")
+		T t = (T) arr;
+		return t;
 	}
 
 }

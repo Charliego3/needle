@@ -17,6 +17,14 @@ import java.util.Map;
  */
 public class JsonTest extends TestCase {
 
+	public void testJson1() {
+		User user = User.newInstance();
+		String json = Json.toJson(user);
+
+		User user1 = Json.toObject(json, User.class);
+		System.out.println(user1);
+	}
+
 	public void testJsonPath() {
 //		JsonPath jsonPath = JsonPath.newInstance("{\"user\": \"whimthen\", \"age\": 34}");
 		JsonPath jsonPath = Json.jsonPath("{\"name\": \"whim then\", \"age\": 1, \"operation\": {\"func\": \"get\"}}");

@@ -38,6 +38,15 @@ public class User extends People {
 		return this;
 	}
 
+	public static User newInstance() {
+		User user = new User();
+		user.setName("WHIMTHEN");
+		user.setBlance(33.44);
+		user.setCode(86);
+		user.setCountry("China");
+		return user;
+	}
+
 //	public int getAge() {
 //		return age;
 //	}

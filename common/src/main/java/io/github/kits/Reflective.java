@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,7 +58,7 @@ public class Reflective {
 	 * @param field  Field
 	 * @param params Parameter
 	 */
-	public static void setFieldValue(Object object, Field field, Object... params) {
+	public static void setFieldValue(Object object, Field field, Object params) {
 		String   methodName = complexSetMethodName(field.getName());
 		Class<?> tClass     = null;
 		try {
@@ -104,17 +106,19 @@ public class Reflective {
 		T instance = null;
 		if (Envs.isBasicType(target) || Envs.isSystemType(target)) {
 			if (target.isInterface()) {
+				Object t = null;
 				if (List.class.isAssignableFrom(target)) {
-					@SuppressWarnings("unchecked")
-					T t = (T) new ArrayList<>();
-					instance = t;
+					t = new ArrayList<>();
 				} else if (Map.class.isAssignableFrom(target)) {
-					@SuppressWarnings("unchecked")
-					T t = (T) new HashMap<>();
-					instance = t;
+					t = new HashMap<>();
+				} else if (Set.class.isAssignableFrom(target)) {
+					t = new HashSet<>();
 				}
+				@SuppressWarnings("unchecked")
+				T it = (T) t;
+				instance = it;
 			} else {
-				return target.newInstance();
+				instance = target.newInstance();
 			}
 		}
 

@@ -32,7 +32,10 @@ public class DateTimes {
     public static final String YYYYMMDD = "yyyyMMdd";
 
     public static Date get(String date) {
-        return new Date(date);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_MM_HH_MM_SS);
+        LocalDateTime localDateTime = LocalDateTime.parse(date, formatter);
+        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
     }
 
     /**

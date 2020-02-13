@@ -63,10 +63,16 @@ public class Maps {
      */
     public static Map<Object, Object> toMap(Object object) {
         Assert.isNotNull(object, new ConvertException("Object is null"));
+        if (object instanceof String && Json.isJsonObject(object.toString())) {
+            return jsonToMap(object.toString());
+        }
         Assert.isTrue(!(Envs.isBasicType(object.getClass()) && Envs.isSystemType(object.getClass())),
             new ConvertException(object.getClass().getName() + " is not support convert to Map. "));
-        if (object instanceof Map)
-            return (Map<Object, Object>) object;
+        if (object instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> map = (Map<Object, Object>) object;
+            return map;
+        }
         HashMap<Object, Object> map = new HashMap<>();
         List<Field> fields = Reflective.getFields(object.getClass());
         if (Lists.isNotNullOrEmpty(fields)) {
