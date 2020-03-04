@@ -415,6 +415,18 @@ public class Strings {
 						   || "FALSE".equalsIgnoreCase(val.trim()));
 	}
 
+	public static boolean parseBoolean(String val) {
+		if (isBlack(val))
+			return false;
+		val = val.trim();
+		if ("TRUE".equalsIgnoreCase(val) || "1".equalsIgnoreCase(val)) {
+			return true;
+		} else if ("FALSE".equalsIgnoreCase(val) || "0".equalsIgnoreCase(val)) {
+			return false;
+		}
+		return false;
+	}
+
 	/**
 	 * 首字母大写
 	 *

@@ -11,26 +11,6 @@ import junit.framework.TestCase;
  */
 public class LogTest extends TestCase {
 
-	public void testBuildErrorMsg() {
-		String  log     = LogBuilder.buildMsg(getLogBody(LogLevel.ERROR));
-		System.out.println(log);
-	}
-
-	public void testBuildInfoMsg() {
-		String  log     = LogBuilder.buildMsg(getLogBody(LogLevel.INFO));
-		System.out.println(log);
-	}
-
-	public void testBuildWarnMsg() {
-		String  log     = LogBuilder.buildMsg(getLogBody(LogLevel.WARN));
-		System.out.println(log);
-	}
-
-	public void testBuildDebugMsg() {
-		String  log     = LogBuilder.buildMsg(getLogBody(LogLevel.DEBUG));
-		System.out.println(log);
-	}
-
 	private LogBody getLogBody(LogLevel logLevelEnum) {
 		return LogBody.newInstance().setLogLevel(logLevelEnum).setMessage("this is {}.{} method.").setException(new NullPointerException("thi is Null")).setArgs(LogTest.class.getSimpleName(), "testBuildMsg");
 	}

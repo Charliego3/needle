@@ -140,7 +140,7 @@ public class LogBuilder {
 	 * @return 日志完整内容
 	 * Log full content
 	 */
-	public static String buildMsg(LogBody logBody) {
+	static String buildMsg(LogBody logBody) {
 		LogLevel      logLevel = logBody.getLogLevel();
 		Object        message  = logBody.getMessage();
 		Object[]      args     = logBody.getArgs();
@@ -157,21 +157,13 @@ public class LogBuilder {
 				msg.append(Json.toJson(message));
 			if (Strings.regexFind(msg.toString(), "(\\{\\})")) {
 				if (Objects.nonNull(args) && args.length > 0) {
-					if (Strings.searchByRegex(msg.toString(), "(\\{\\})") == 1) {
+					for (Object arg : args) {
 						String m = msg.toString();
 						msg.delete(0, msg.toString().length());
-						String json = Json.toJson(args);
-						json = Strings.isNullOrEmpty(json) ? Strings.NULL : json;
-						msg.append(Strings.replaceFirst(m, json, "\\{\\}"));
-					} else {
-						for (Object arg : args) {
-							String m = msg.toString();
-							msg.delete(0, msg.toString().length());
-							String json = Json.toJson(arg);
-							// 对特殊字符加转译符号, 如$等做替换操作会抛异常: java.lang.IllegalArgumentException: Illegal group reference
-							String replacement = Strings.isNullOrEmpty(json) ? Strings.NULL : Matcher.quoteReplacement(json);
-							msg.append(Strings.replaceFirst(m, replacement, "\\{\\}"));
-						}
+						String json = Json.toJson(arg);
+						// 对特殊字符加转译符号, 如$等做替换操作会抛异常: java.lang.IllegalArgumentException: Illegal group reference
+						String replacement = Strings.isNullOrEmpty(json) ? Strings.NULL : Matcher.quoteReplacement(json);
+						msg.append(Strings.replaceFirst(m, replacement, "\\{\\}"));
 					}
 				} else {
 					String m = msg.toString();

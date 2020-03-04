@@ -1,7 +1,10 @@
 package io.github.kits.log;
 
+import io.github.kits.PropertiesKit;
 import io.github.kits.enums.LogLevel;
+import io.github.kits.enums.Prop;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -18,56 +21,74 @@ import static io.github.kits.log.LogThread.addBody;
  */
 public class Logger {
 
+	private static final boolean isAsyncPrint;
+
 	static {
-		LogThread.start();
+		isAsyncPrint = PropertiesKit.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
+									.orElse(false);
+		if (isAsyncPrint) {
+			LogThread.start();
+		}
 	}
 
 	public static void info(Object message) {
-		addBody(LogBody.info().setMessage(message));
+		print(LogBody.info().setMessage(message));
 	}
 
 	public static void infof(String message, Object... args) {
-		addBody(LogBody.info().setMessage(message).setArgs(args));
+		print(LogBody.info().setMessage(message).setArgs(args));
 	}
 
 	public static void debug(Object message) {
-		addBody(LogBody.debug().setMessage(message));
+		print(LogBody.debug().setMessage(message));
 	}
 
 	public static void debugf(String message, Object... args) {
-		addBody(LogBody.debug().setMessage(message).setArgs(args));
+		print(LogBody.debug().setMessage(message).setArgs(args));
 	}
 
 	public static void warn(Object message) {
-		addBody(LogBody.warn().setMessage(message));
+		print(LogBody.warn().setMessage(message));
 	}
 
 	public static void warnf(String message, Object... args) {
-		addBody(LogBody.warn().setMessage(message).setArgs(args));
+		print(LogBody.warn().setMessage(message).setArgs(args));
 	}
 
 	public static void error(Object message) {
-		addBody(LogBody.error().setMessage(message));
+		print(LogBody.error().setMessage(message));
 	}
 
 	public static void error(Throwable exception) {
-		addBody(LogBody.error().setException(exception));
+		print(LogBody.error().setException(exception));
 	}
 
 	public static void error(String message, Throwable exception) {
-		addBody(LogBody.error().setMessage(message).setException(exception));
+		print(LogBody.error().setMessage(message).setException(exception));
 	}
 
 	public static void errorf(String message, Object... args) {
-		addBody(LogBody.error().setMessage(message).setArgs(args));
+		print(LogBody.error().setMessage(message).setArgs(args));
 	}
 
 	public static void errorf(String message, Throwable exception, Object... args) {
-		addBody(LogBody.error().setMessage(message).setException(exception).setArgs(args));
+		print(LogBody.error().setMessage(message).setException(exception).setArgs(args));
 	}
 
 	public static boolean isDebugEnabled() {
 		return getLevel().contains(LogLevel.DEBUG.getLevel());
+	}
+
+	private static void print(LogBody body) {
+		if (isAsyncPrint) {
+			addBody(body);
+		} else {
+			try {
+				LogThread.print(body);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public static void setLevel(LogLevel... level) {

@@ -148,7 +148,7 @@ public class Files {
                     }
                 }
             }
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException ignored) {
         }
         return resourcePath;
     }

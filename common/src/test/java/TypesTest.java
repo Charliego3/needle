@@ -20,7 +20,7 @@ public class TypesTest extends TestCase {
 		Logger.infof("Types.type: {}", type);
 		Logger.infof("Types.type: {}", type);
 
-		Envs.sleep(11000);
+//		Envs.sleep(11000);
 	}
 
 	public void testPrintBasicTypeArr() throws IllegalAccessException, InstantiationException, ClassNotFoundException {

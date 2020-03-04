@@ -3,6 +3,7 @@ package io.github.kits;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,7 +69,7 @@ public class Lists {
 	@SafeVarargs
 	public static <T> List<T> asList(T... objects) {
 		if (objects == null || objects.length == 0) {
-			return null;
+			return Collections.emptyList();
 		}
 		return Arrays.asList(objects);
 	}

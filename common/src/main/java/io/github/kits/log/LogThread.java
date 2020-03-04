@@ -24,12 +24,12 @@ import java.util.concurrent.LinkedBlockingDeque;
  */
 public class LogThread implements Runnable {
 
-	private static OutputStream[]               outputStreams;
+	private static OutputStream[] outputStreams;
 	private static final LinkedBlockingDeque<LogBody> queue;
-	private static final LogThread                    logThread;
-	private static Thread                       mainThread;
-	private static String                       logPath;
-	private static final String                       type;
+	private static final LogThread logThread;
+	private static Thread mainThread;
+	private static String logPath;
+	private static final String type;
 
 	static {
 		logThread = new LogThread();
@@ -58,11 +58,7 @@ public class LogThread implements Runnable {
 						continue;
 					}
 					LogBody logBody = queue.take();
-					String  message = LogBuilder.buildMsg(logBody);
-					if (Strings.isNullOrEmpty(message)) {
-						continue;
-					}
-					op(message);
+					print(logBody);
 					//如果主线程结束,则日志线程也退出
 					if (mainThread == null && queue.isEmpty()) {
 						Envs.sleep(1000);
@@ -89,6 +85,14 @@ public class LogThread implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	static void print(LogBody logBody) throws IOException {
+		String message = LogBuilder.buildMsg(logBody);
+		if (Strings.isNullOrEmpty(message)) {
+			return;
+		}
+		op(message);
 	}
 
 	public static void op(String message) throws IOException {
@@ -120,7 +124,7 @@ public class LogThread implements Runnable {
 	}
 
 	private static OutputStream[] getOutputStreams() {
-		String[]       logTypes      = type.split(",");
+		String[] logTypes = type.split(",");
 		OutputStream[] outputStreams = new OutputStream[logTypes.length];
 		for (int i = 0; i < logTypes.length; i++) {
 			String logType = logTypes[i].trim();
@@ -132,9 +136,9 @@ public class LogThread implements Runnable {
 					File logFile = null;
 					try {
 						String logDirPath = Paths.get("logs").toAbsolutePath().toString();
-						logPath = logPath.replaceFirst("\\{WORKDIR\\}", logDirPath);
-						String dir    = logPath.substring(0, logPath.lastIndexOf("/"));
-						File   logDir = new File(dir);
+						logPath = logPath.replaceFirst("\\{WORKDIR}", logDirPath);
+						String dir = logPath.substring(0, logPath.lastIndexOf("/"));
+						File logDir = new File(dir);
 						if (!logDir.exists()) {
 							logDir.mkdirs();
 						}

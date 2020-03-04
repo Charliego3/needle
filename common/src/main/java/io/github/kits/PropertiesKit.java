@@ -5,8 +5,8 @@ import io.github.kits.log.Logger;
 import io.github.kits.timer.TimedTask;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class PropertiesKit {
 
-	private final static String LAST_MODIFY_TIME = "$$LMT";
+	private final static String LAST_MODIFY_TIME = "$$LMT$$";
 
 	private final static String TIMER_TASK_NAME = "PropertiesKit-Reload";
 
@@ -30,8 +30,8 @@ public final class PropertiesKit {
 	/**
 	 * Properties cache
 	 */
-	private static ConcurrentHashMap<File, Properties> PROPERTIES_CACHE_MAP;
-	private static ConcurrentHashMap<String, File> PROP_FILE_CACHE;
+	private static final ConcurrentHashMap<File, Properties> PROP_CACHE;
+	private static final ConcurrentHashMap<String, File> PROP_FILE_CACHE;
 
 	/**
 	 * Get the default configuration file
@@ -46,17 +46,8 @@ public final class PropertiesKit {
 	 * Clear the Properties configuration
 	 */
 	public static void clearAll() {
-		PROPERTIES_CACHE_MAP.clear();
-	}
-
-	/**
-	 * Clear the contents of a specific profile
-	 *
-	 * @param fileName file path
-	 */
-	public static void clear(String fileName) {
-		File propFile = getPropFile(fileName);
-		clear(propFile);
+		PROP_CACHE.clear();
+		PROP_FILE_CACHE.clear();
 	}
 
 	/**
@@ -66,7 +57,7 @@ public final class PropertiesKit {
 	 */
 	public static void clear(File file) {
 		if (Files.isNotNullOrEmpty(file)) {
-			PROPERTIES_CACHE_MAP.remove(file);
+			PROP_CACHE.remove(file);
 		}
 	}
 
@@ -113,18 +104,18 @@ public final class PropertiesKit {
 	 */
 	private static void put(File key, Properties properties) {
 		properties.setProperty(LAST_MODIFY_TIME, String.valueOf(key.lastModified()));
-		PROPERTIES_CACHE_MAP.put(key, properties);
+		PROP_CACHE.put(key, properties);
 	}
 
 	/**
 	 * Get the corresponding value from the path according to the key
 	 *
-	 * @param filePath      file path
+	 * @param fileName      file path
 	 * @param key           key
 	 * @return The value obtained from the key
 	 */
-    public static Optional<Object> getProperty(String filePath, String key) {
-        return getObject(filePath, key);
+    public static Optional<Object> getProperty(String fileName, String key) {
+		return getProperties(fileName).map(prop -> prop.get(key));
     }
 
 	/**
@@ -135,7 +126,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
     public static Optional<Object> getProperty(File file, String key) {
-        return getObject(file, key);
+        return getProperties(file).map(prop -> prop.get(key));
     }
 
 	/**
@@ -145,7 +136,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
     public static Optional<Object> getProperty(String key) {
-        return getObject(getDefaultConfig(), key);
+		return getProperties(getDefaultConfig()).map(prop -> prop.get(key));
     }
 
 	/**
@@ -156,7 +147,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<String> getString(String fileName, String key) {
-		return get(fileName, key).map(String::valueOf);
+		return getProperties(fileName).map(p -> p.getProperty(key));
 	}
 
 	/**
@@ -167,7 +158,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<String> getString(File file, String key) {
-		return get(file, key).map(String::valueOf);
+		return getProperties(file).map(p -> p.getProperty(key));
 	}
 
 	/**
@@ -188,7 +179,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Integer> getInt(String fileName, String key) {
-		return get(fileName, key).map(Integer::valueOf);
+		return getString(fileName, key).map(Integer::parseInt);
 	}
 
 	/**
@@ -199,7 +190,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Integer> getInt(File file, String key) {
-		return get(file, key).map(Integer::valueOf);
+		return getString(file, key).map(Integer::parseInt);
 	}
 
 	/**
@@ -215,12 +206,12 @@ public final class PropertiesKit {
 	/**
 	 * Get value from the specified file path
 	 *
-	 * @param filePath file path
+	 * @param fileName file path
 	 * @param key      key
 	 * @return The value obtained from the key
 	 */
-	public static Optional<Short> getShort(String filePath, String key) {
-		return get(filePath, key).map(Short::valueOf);
+	public static Optional<Short> getShort(String fileName, String key) {
+		return getString(fileName, key).map(Short::parseShort);
 	}
 
 	/**
@@ -231,7 +222,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Short> getShort(File file, String key) {
-		return get(file, key).map(Short::valueOf);
+		return getString(file, key).map(Short::parseShort);
 	}
 
 	/**
@@ -247,12 +238,12 @@ public final class PropertiesKit {
 	/**
 	 * Get value from the specified file path
 	 *
-	 * @param filePath file path
+	 * @param fileName file path
 	 * @param key      key
 	 * @return The value obtained from the key
 	 */
-	public static Optional<Long> getLong(String filePath, String key) {
-		return get(filePath, key).map(Long::valueOf);
+	public static Optional<Long> getLong(String fileName, String key) {
+		return getString(fileName, key).map(Long::parseLong);
 	}
 
 	/**
@@ -263,7 +254,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Long> getLong(File file, String key) {
-		return get(file, key).map(Long::valueOf);
+		return getString(file, key).map(Long::parseLong);
 	}
 
 	/**
@@ -279,12 +270,12 @@ public final class PropertiesKit {
 	/**
 	 * Get the float type value from the specified file path
 	 *
-	 * @param filePath file path
+	 * @param fileName file path
 	 * @param key      key
 	 * @return The value obtained from the key
 	 */
-	public static Optional<Float> getFloat(String filePath, String key) {
-		return get(filePath, key).map(Float::valueOf);
+	public static Optional<Float> getFloat(String fileName, String key) {
+		return getString(fileName, key).map(Float::parseFloat);
 	}
 
 	/**
@@ -295,7 +286,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Float> getFloat(File file, String key) {
-		return get(file, key).map(Float::valueOf);
+		return getString(file, key).map(Float::parseFloat);
 	}
 
 	/**
@@ -311,12 +302,12 @@ public final class PropertiesKit {
 	/**
 	 * Get the double-precision floating-point type value from the specified file path
 	 *
-	 * @param filePath file path
+	 * @param fileName file path
 	 * @param key      key
 	 * @return The value obtained from the key
 	 */
-	public static Optional<Double> getDouble(String filePath, String key) {
-		return get(filePath, key).map(Double::valueOf);
+	public static Optional<Double> getDouble(String fileName, String key) {
+		return getString(fileName, key).map(Double::parseDouble);
 	}
 
 	/**
@@ -327,7 +318,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Double> getDouble(File file, String key) {
-		return get(file, key).map(Double::valueOf);
+		return getString(file, key).map(Double::parseDouble);
 	}
 
 	/**
@@ -348,7 +339,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Boolean> getBoolean(String fileName, String key) {
-		return get(fileName, key).map(Boolean::valueOf);
+		return getString(fileName, key).map(Strings::parseBoolean);
 	}
 
 	/**
@@ -359,7 +350,7 @@ public final class PropertiesKit {
 	 * @return The value obtained from the key
 	 */
 	public static Optional<Boolean> getBoolean(File file, String key) {
-		return get(file, key).map(Boolean::valueOf);
+		return getString(file, key).map(Strings::parseBoolean);
 	}
 
 	/**
@@ -392,107 +383,59 @@ public final class PropertiesKit {
 		return !isNullOrEmpty(properties);
 	}
 
-	/**
-	 * Get the value corresponding to the key from the specified file or path
-	 *
-	 * @param file File object
-	 * @param key  key
-	 * @return The value obtained from the key
-	 */
-	private static Optional<String> get(Object file, String key) {
-		Optional<Properties> properties = getProperties(file);
-		return properties.filter(prop -> isNotNullOrEmpty(prop) && Strings.isNotNullOrEmpty(key)).map(prop -> prop.getProperty(key));
-	}
-
-	/**
-	 * Get the value corresponding to the key from the specified file or path
-	 *
-	 * @param file File object
-	 * @param key  key
-	 * @return The value obtained from the key
-	 */
-	private static Optional<Object> getObject(Object file, String key) {
-		Optional<Properties> properties = getProperties(file);
-		return properties.filter(prop -> isNotNullOrEmpty(prop) && Strings.isNotNullOrEmpty(key)).map(prop -> prop.get(key));
-	}
-
-	/**
-	 * Get properties, if there is direct fetch in the cache,
-	 * if it does not exist in the cache, load from the file
-	 *
-	 * @param fileOrPath file path
-	 * @return Properties Object
-	 */
-	public static Optional<Properties> getProperties(Object fileOrPath) {
-		File       proFile    = getPropFile(fileOrPath);
-		Properties properties = null;
-		if (Objects.nonNull(proFile)) {
-			properties = PROPERTIES_CACHE_MAP.get(proFile);
-		}
-		if (isNullOrEmpty(properties) && Objects.nonNull(proFile)) {
-			properties = loadProperties(proFile);
-		}
-		return Optional.ofNullable(properties);
-	}
-
-	/**
-	 * Load Properties file
-	 *
-	 * @param proFile file
-	 * @return Properties
-	 */
-	private static Properties loadProperties(File proFile) {
-		byte[]     bytes      = Files.loadResourceFile(proFile.getPath().substring(proFile.getPath().lastIndexOf("/") + 1));
-		Properties properties = null;
-		if (null != bytes) {
-			try {
-				String content = new String(bytes);
-				if (Strings.isNotNullOrEmpty(content)) {
-					properties = new Properties();
-					properties.load(new StringReader(content));
-					put(proFile, properties);
-				}
-			} catch (Exception ex) {
-				Logger.errorf("Load Properties error", ex);
-			}
-		}
-		return properties;
-	}
-
-	/**
-	 * Get file
-	 *
-	 * @param file File or path
-	 * @return File object
-	 */
-	private static File getPropFile(Object file) {
-		if (Objects.nonNull(file)) {
-			if (file instanceof String) {
-				if (PROP_FILE_CACHE.containsKey(file.toString()))
-					return PROP_FILE_CACHE.get(file.toString());
-				else {
-					File resourceFile = Files.getResourceFile(complexEnd(file.toString()));
-					if (Objects.nonNull(resourceFile) && resourceFile.exists())
-						PROP_FILE_CACHE.put(resourceFile.getAbsolutePath(), resourceFile);
-					else
-						PROP_FILE_CACHE.put(file.toString(), new File(file.toString()));
-					return resourceFile;
-				}
-			} else if (file instanceof File) {
-				String absolutePath = ((File) file).getAbsolutePath();
-				if (PROP_FILE_CACHE.containsKey(absolutePath)) {
-					return PROP_FILE_CACHE.get(absolutePath);
+	public static Optional<Properties> getProperties(File file) {
+		try {
+			if (!PROP_CACHE.containsKey(file)) {
+				Properties properties = new Properties();
+				String content = null;
+				if (!file.getPath().contains("!" + File.separator)) {
+					byte[] bytes = Files.loadFile(file);
+					if (bytes != null) {
+						content = new String(bytes);
+					}
 				} else {
-					PROP_FILE_CACHE.put(absolutePath, (File) file);
-					if (((File) file).exists()) {
-						return (File) file;
-					} else {
-						return null;
+					String filePath = file.getPath();
+					String resourcePath = filePath.substring(filePath.indexOf("!" + File.separator) + 2, filePath.length());
+					byte[] bytes = Files.loadResourceFile(resourcePath);
+					if (bytes != null) {
+						content = new String(bytes);
 					}
 				}
+				if (Strings.isBlack(content)) {
+					Logger.errorf("Can not find properties file: [{}]", file.getAbsolutePath());
+					return Optional.empty();
+				}
+
+				properties.load(new StringReader(content));
+				properties.setProperty(LAST_MODIFY_TIME, String.valueOf(file.lastModified()));
+				PROP_CACHE.put(file, properties);
+				Logger.infof("Load properties file: {}", Colors.toBuleBold("[" + file.getAbsolutePath() + "]"));
 			}
+
+			return Optional.ofNullable(PROP_CACHE.get(file));
+		} catch (IOException err) {
+			Logger.errorf("Get properties file failed. File: [{}]", err, file.getAbsolutePath());
+			return Optional.empty();
 		}
-		return null;
+	}
+
+	public static Optional<Properties> getProperties(String fileName) {
+		File file = null;
+		if (!PROP_FILE_CACHE.containsKey(fileName)) {
+			file = Files.getResourceFile(complexEnd(fileName));
+			if (Files.isNotNullOrEmpty(file)) {
+				PROP_FILE_CACHE.put(fileName, file);
+			}
+		} else {
+			file = PROP_FILE_CACHE.get(fileName);
+		}
+
+		if (file != null) {
+			return getProperties(file);
+		} else {
+			Logger.errorf("Get properties file failed. File: [{}]", fileName);
+			return Optional.empty();
+		}
 	}
 
 	/**
@@ -512,17 +455,17 @@ public final class PropertiesKit {
 		/*
 		 * Initialize, periodically check whether the configuration file is modified.
 		 */
-		PROPERTIES_CACHE_MAP = new ConcurrentHashMap<>();
+		PROP_CACHE = new ConcurrentHashMap<>();
 		PROP_FILE_CACHE = new ConcurrentHashMap<>();
 		TimedTask.addTask(TIMER_TASK_NAME, prop -> {
-			if (Maps.isNotNullOrEmpty(PROPERTIES_CACHE_MAP)) {
-				PROPERTIES_CACHE_MAP.forEach((file, properties) -> {
+			if (Maps.isNotNullOrEmpty(PROP_CACHE)) {
+				PROP_CACHE.forEach((file, properties) -> {
 					if (file.exists() && properties.containsKey(LAST_MODIFY_TIME)) {
 						String lastTimeStamp   = String.valueOf(file.lastModified());
 						String cachedTimeStamp = properties.getProperty(LAST_MODIFY_TIME);
 						if (!lastTimeStamp.equals(cachedTimeStamp)) {
-							PROPERTIES_CACHE_MAP.remove(file);
-							loadProperties(file);
+							PROP_CACHE.remove(file);
+							getProperties(file);
 							Logger.infof("The {} properties has been changed!", Colors.toYellowBold("[ " + file.getAbsolutePath() + " ]"));
 						}
 					}
