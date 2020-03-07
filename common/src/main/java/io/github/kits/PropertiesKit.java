@@ -7,6 +7,7 @@ import io.github.kits.timer.TimedTask;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -361,6 +362,18 @@ public final class PropertiesKit {
 	 */
 	public static Optional<Boolean> getBoolean(String key) {
 		return getBoolean(getDefaultConfig(), key);
+	}
+
+	public static Optional<BigDecimal> getDecimal(File file, String key) {
+		return getString(file, key).map(BigDecimal::new);
+	}
+
+	public static Optional<BigDecimal> getDecimal(String fileName, String key) {
+		return getString(fileName, key).map(BigDecimal::new);
+	}
+
+	public static Optional<BigDecimal> getDecimal(String key) {
+		return getDecimal(getDefaultConfig(), key);
 	}
 
 	/**

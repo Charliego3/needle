@@ -31,14 +31,15 @@ class TimedKit {
         return new Timer(taskName);
     }
 
+    @SuppressWarnings("unchecked")
     private static <T, R> TimerTask getTimerTask(Object task, T t, R r) {
         return new TimerTask() {
             @Override
             public void run() {
                 if (task instanceof Consumer) {
-                    ((Consumer) task).accept(t);
+                    ((Consumer<T>) task).accept(t);
                 } else if (task instanceof BiConsumer) {
-                    ((BiConsumer) task).accept(t, r);
+                    ((BiConsumer<T, R>) task).accept(t, r);
                 }
             }
         };
