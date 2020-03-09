@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 public class LogBuilder {
 
 	private static final String        template;
-	private static       String        level;
+	private static      String        level;
 	private static final boolean       isTemplateColorful;
 	private static final String        LEVEL_COLOR_REGEX         = "(\\{B?F\\d{1,2}})?([\\s|\\S])?\\{L}([\\s|\\S])?\\{FE}?";
 	private static final String        COLOR_REGEX               = "(\\{B?F(\\d{1,2})})";

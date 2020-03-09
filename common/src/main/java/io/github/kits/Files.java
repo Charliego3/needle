@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.stream.Stream;
  */
 public class Files {
 
-    private static final Class thiClass = Files.class;
+    private static final Class<?> thisClass = Files.class;
 
     /**
      * 判断文件是否为空
@@ -142,7 +143,7 @@ public class Files {
                     resourcePath = ((File) fileOrPath).getAbsolutePath();
                 } else if (fileOrPath instanceof String) {
                     String decode = URLDecoder.decode((String) fileOrPath, "UTF-8");
-                    URL url = thiClass.getClassLoader().getResource(decode);
+                    URL url = thisClass.getClassLoader().getResource(decode);
                     if (Objects.nonNull(url)) {
                         resourcePath = url.getFile();
                     }
@@ -255,7 +256,7 @@ public class Files {
         String javaHome = System.getProperty("java.home");
 
         //去除 javahome 的最后一个路径节点,扩大搜索范文
-        javaHome = javaHome.replaceAll("\\/[a-zA-z0-9\\_\\$]*$", "");
+        javaHome = javaHome.replaceAll("/[a-zA-z0-9_$]*$", "");
 
         String[] classPaths = System.getProperty("java.class.path").split(File.pathSeparator);
         for (String classPath : classPaths) {
@@ -274,9 +275,17 @@ public class Files {
      */
     private static List<File> getFiles(File rootFile) {
         Set<File> files = new HashSet<>();
+        if (Objects.isNull(rootFile) || !rootFile.exists()) {
+            return Collections.emptyList();
+        }
         if (rootFile.isDirectory()) {
-            for (File file : rootFile.listFiles()) {
-                files.addAll(getFiles(file));
+            File[] listFiles = rootFile.listFiles();
+            if (Objects.isNull(listFiles) || listFiles.length == 0) {
+                files.add(rootFile);
+            } else {
+                for (File file : listFiles) {
+                    files.addAll(getFiles(file));
+                }
             }
         } else {
             files.add(rootFile);
@@ -328,8 +337,8 @@ public class Files {
         return Objects.nonNull(jarFile) &&
                 jarFile.exists() &&
                 jarFile.isFile() &&
-                Strings.regexFind(jarFile.getAbsolutePath(),
-                        "winter-[a-zA-Z0-9_-]+-([0-9]+.[0-9]+.[0-9]+)-((RELEASE)|(SNAPSHOT))\\.jar$");
+                Strings.regexMatch(jarFile.getAbsolutePath(),
+                        "needle-[a-zA-Z0-9_-]+-([0-9]+.[0-9]+.[0-9]+)-((RELEASE)|(SNAPSHOT))\\.jar$");
     }
 
     /**

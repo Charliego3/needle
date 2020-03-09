@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -398,6 +399,10 @@ public final class PropertiesKit {
 
 	public static Optional<Properties> getProperties(File file) {
 		try {
+			if (Objects.isNull(file) || !file.exists()) {
+				return Optional.empty();
+			}
+
 			if (!PROP_CACHE.containsKey(file)) {
 				Properties properties = new Properties();
 				String content = null;
@@ -408,7 +413,7 @@ public final class PropertiesKit {
 					}
 				} else {
 					String filePath = file.getPath();
-					String resourcePath = filePath.substring(filePath.indexOf("!" + File.separator) + 2, filePath.length());
+					String resourcePath = filePath.substring(filePath.indexOf("!" + File.separator) + 2);
 					byte[] bytes = Files.loadResourceFile(resourcePath);
 					if (bytes != null) {
 						content = new String(bytes);
@@ -438,9 +443,14 @@ public final class PropertiesKit {
 			file = Files.getResourceFile(complexEnd(fileName));
 			if (Files.isNotNullOrEmpty(file)) {
 				PROP_FILE_CACHE.put(fileName, file);
+			} else if (Prop.DEFAULT_LOGGER_PROPERTIES.getProp().equals(fileName)) {
+				PROP_FILE_CACHE.put(fileName, new File(Strings.isBlack(fileName) ? "" : fileName));
 			}
 		} else {
 			file = PROP_FILE_CACHE.get(fileName);
+			if (Objects.isNull(file) || !file.exists() || file.isDirectory()) {
+				return Optional.empty();
+			}
 		}
 
 		if (file != null) {

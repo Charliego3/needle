@@ -503,4 +503,15 @@ public class Strings {
 		return "";
 	}
 
+	public static String concat(Object... objs) {
+		if (Objects.isNull(objs) || objs.length == 0) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		for (Object obj : objs) {
+			sb.append(obj);
+		}
+		return sb.toString();
+	}
+
 }
