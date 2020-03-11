@@ -261,7 +261,7 @@ public class LogBuilder {
 	static String classInfo() {
 		String        classInfo = Envs.getStaceTraceE(5).getClassName();
 		StringBuilder className = new StringBuilder();
-		if (IS_SHORT_CLASS.get() || (CLASS_INDENT_LENGTH.get() > 0 && classInfo.length() + 5 > CLASS_INDENT_LENGTH.get())) {
+		if (IS_SHORT_CLASS.get() && (CLASS_INDENT_LENGTH.get() > 0 && classInfo.length() + 5 > CLASS_INDENT_LENGTH.get())) {
 			String[] split = classInfo.split("\\.");
 			for (int i = 0; i < split.length - 1; i++) {
 				className.append(split[i].charAt(0)).append(".");

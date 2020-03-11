@@ -480,21 +480,25 @@ public final class PropertiesKit {
 		 */
 		PROP_CACHE = new ConcurrentHashMap<>();
 		PROP_FILE_CACHE = new ConcurrentHashMap<>();
-		TimedTask.addTask(TIMER_TASK_NAME, prop -> {
-			if (Maps.isNotNullOrEmpty(PROP_CACHE)) {
-				PROP_CACHE.forEach((file, properties) -> {
-					if (file.exists() && properties.containsKey(LAST_MODIFY_TIME)) {
-						String lastTimeStamp   = String.valueOf(file.lastModified());
-						String cachedTimeStamp = properties.getProperty(LAST_MODIFY_TIME);
-						if (!lastTimeStamp.equals(cachedTimeStamp)) {
-							PROP_CACHE.remove(file);
-							getProperties(file);
-							Logger.infof("The {} properties has been changed!", Colors.toYellowBold("[ " + file.getAbsolutePath() + " ]"));
+		Boolean isAsync = PropertiesKit.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
+									   .orElse(false);
+		if (isAsync) {
+			TimedTask.addTask(TIMER_TASK_NAME, prop -> {
+				if (Maps.isNotNullOrEmpty(PROP_CACHE)) {
+					PROP_CACHE.forEach((file, properties) -> {
+						if (file.exists() && properties.containsKey(LAST_MODIFY_TIME)) {
+							String lastTimeStamp   = String.valueOf(file.lastModified());
+							String cachedTimeStamp = properties.getProperty(LAST_MODIFY_TIME);
+							if (!lastTimeStamp.equals(cachedTimeStamp)) {
+								PROP_CACHE.remove(file);
+								getProperties(file);
+								Logger.infof("The {} properties has been changed!", Colors.toYellowBold("[ " + file.getAbsolutePath() + " ]"));
+							}
 						}
-					}
-				});
-			}
-		}, 5 * 1000);
+					});
+				}
+			}, 5 * 1000);
+		}
 	}
 
 }
