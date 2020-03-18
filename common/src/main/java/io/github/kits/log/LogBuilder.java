@@ -62,10 +62,10 @@ public class LogBuilder {
 	private static final AtomicInteger THREAD_INDENT_LENGTH      = new AtomicInteger(0);
 	private static final AtomicBoolean THREAD_ID_IS_LEFT_INDENT  = new AtomicBoolean(true);
 	private static final AtomicInteger THREAD_ID_INDENT_LENGTH   = new AtomicInteger(0);
+	private static final AtomicBoolean IS_SET_LEVEL              = new AtomicBoolean(false);
 
 	static {
 		template = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "template").orElse("{BF30}[{L}]{FE} [{F4}{D}{FE}] {F32}[{TL15}:{TIL2}]{FE} {F36}[{SCL33}:{CLL3}]{FE}{F91}:{FE} {I}");
-		level = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "level").orElse("INFO,WARN,ERROR");
 		isTemplateColorful = Strings.regexFind(template, COLOR_REGEX);
 		Matcher classMatcher = PatternCache.get(CLASS_REGEX).matcher(template);
 		if (classMatcher.find()) {
@@ -82,6 +82,16 @@ public class LogBuilder {
 		setIndentAndDirection(CLASS_LINE_REGEX, CLASS_LINE_INDENT_LENGTH, CLASS_LINE_IS_LEFT_INDENT);
 		setIndentAndDirection(THREAD_REGEX, THREAD_INDENT_LENGTH, THREAD_IS_LEFT_INDENT);
 		setIndentAndDirection(THREAD_ID_REGEX, THREAD_ID_INDENT_LENGTH, THREAD_ID_IS_LEFT_INDENT);
+	}
+
+	public static void addBody(LogBody body) {
+		// 配置的日志级别才输出, level 放在这里可以实现不重启修改日志级别
+		if (!IS_SET_LEVEL.get())
+			level = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "level").orElse("INFO,WARN,ERROR");
+		// The configured log level is output.
+		if (level.contains(body.getLogLevel().getLevel())) {
+			LogThread.addBody(body);
+		}
 	}
 
 	/**
@@ -127,8 +137,10 @@ public class LogBuilder {
 	 *                 Log level string, separated by commas
 	 */
 	static void setLevels(String logLevel) {
-		if (Strings.isNotNullOrEmpty(logLevel))
+		if (Strings.isNotNullOrEmpty(logLevel)) {
 			level = logLevel;
+			IS_SET_LEVEL.set(true);
+		}
 	}
 
 	/**
@@ -145,42 +157,37 @@ public class LogBuilder {
 		Object        message  = logBody.getMessage();
 		Object[]      args     = logBody.getArgs();
 		StringBuilder msg      = new StringBuilder();
-		// 配置的日志级别才输出
-		// The configured log level is output.
-		if (level.contains(logLevel.getLevel())) {
-			// 彩色日志处理
-			// Color log processing
-			String colorToken = replaceColorToken(logLevel);
-			if (message instanceof String)
-				msg.append(message);
-			else
-				msg.append(Json.toJson(message));
-			if (Strings.regexFind(msg.toString(), "(\\{\\})")) {
-				if (Objects.nonNull(args) && args.length > 0) {
-					for (Object arg : args) {
-						String m = msg.toString();
-						msg.delete(0, msg.toString().length());
-						String json = Json.toJson(arg);
-						// 对特殊字符加转译符号, 如$等做替换操作会抛异常: java.lang.IllegalArgumentException: Illegal group reference
-						String replacement = Strings.isNullOrEmpty(json) ? Strings.NULL : Matcher.quoteReplacement(json);
-						msg.append(Strings.replaceFirst(m, replacement, "\\{\\}"));
-					}
-				} else {
+		// 彩色日志处理
+		// Color log processing
+		String colorToken = replaceColorToken(logLevel);
+		if (message instanceof String)
+			msg.append(message);
+		else
+			msg.append(Json.toJson(message));
+		if (Strings.regexFind(msg.toString(), "(\\{\\})")) {
+			if (Objects.nonNull(args) && args.length > 0) {
+				for (Object arg : args) {
 					String m = msg.toString();
 					msg.delete(0, msg.toString().length());
-					msg.append(Strings.replace(m, Strings.NULL, "\\{\\}"));
+					String json = Json.toJson(arg);
+					// 对特殊字符加转译符号, 如$等做替换操作会抛异常: java.lang.IllegalArgumentException: Illegal group reference
+					String replacement = Strings.isNullOrEmpty(json) ? Strings.NULL : Matcher.quoteReplacement(json);
+					msg.append(Strings.replaceFirst(m, replacement, "\\{\\}"));
 				}
+			} else {
+				String m = msg.toString();
+				msg.delete(0, msg.toString().length());
+				msg.append(Strings.replace(m, Strings.NULL, "\\{\\}"));
 			}
-			if (logLevel == LogLevel.ERROR && Objects.nonNull(logBody.getException())) {
-				if (Objects.isNull(message))
-					msg.delete(0, msg.toString().length());
-				if (Strings.isNotNullOrEmpty(msg.toString()))
-					msg.append(" => ");
-				msg.append(appendStackTrace(logBody.getException()));
-			}
-			return replaceMsgToken(colorToken, logLevel, msg.toString(), logBody);
 		}
-		return msg.toString();
+		if (logLevel == LogLevel.ERROR && Objects.nonNull(logBody.getException())) {
+			if (Objects.isNull(message))
+				msg.delete(0, msg.toString().length());
+			if (Strings.isNotNullOrEmpty(msg.toString()))
+				msg.append(" => ");
+			msg.append(appendStackTrace(logBody.getException()));
+		}
+		return replaceMsgToken(colorToken, logLevel, msg.toString(), logBody);
 	}
 
 	/**
@@ -201,9 +208,9 @@ public class LogBuilder {
 		token = Strings.replace(token, DateTimes.now(DateTimes.YYYY_MM_DD_MM_HH_MM_SS_SSS), DATE_TIME);
 		token = Strings.replace(token, Matcher.quoteReplacement(message), INFORMATION);
 		token = getToken(token, classInfo, classLine, CLASS_INDENT_LENGTH, CLASS_IS_LEFT_INDENT,
-				CLASS_REGEX, CLASS_LINE_INDENT_LENGTH, CLASS_LINE_IS_LEFT_INDENT, CLASS_LINE_REGEX);
+						 CLASS_REGEX, CLASS_LINE_INDENT_LENGTH, CLASS_LINE_IS_LEFT_INDENT, CLASS_LINE_REGEX);
 		token = getToken(token, threadInfo, threadId, THREAD_INDENT_LENGTH, THREAD_IS_LEFT_INDENT,
-				THREAD_REGEX, THREAD_ID_INDENT_LENGTH, THREAD_ID_IS_LEFT_INDENT, THREAD_ID_REGEX);
+						 THREAD_REGEX, THREAD_ID_INDENT_LENGTH, THREAD_ID_IS_LEFT_INDENT, THREAD_ID_REGEX);
 		return token + "\r\n";
 	}
 
@@ -331,10 +338,10 @@ public class LogBuilder {
 			// 如果是error级别, 则全部为红色显示
 			// If it is error level, all are displayed in red
 			if (logLevel == LogLevel.ERROR) {
-				tempTemplate = Strings.replace(tempTemplate, "", COLOR_END);
-				tempTemplate = Strings.replace(tempTemplate, "", COLOR_REGEX);
+				tempTemplate = Strings.replaceMultiRegex(tempTemplate, "", COLOR_END, COLOR_REGEX);
+//				tempTemplate = Strings.replace(tempTemplate, "", COLOR_REGEX);
 				tempTemplate = Color.BASE_PRE.getContent() + Color.BOLD.getContent() +
-						Color.RED.getContent() + tempTemplate + Color.END.getContent();
+								   Color.RED.getContent() + tempTemplate + Color.END.getContent();
 				return tempTemplate;
 			}
 			if (logLevel == LogLevel.WARN && Strings.regexFind(tempTemplate, LEVEL)) {

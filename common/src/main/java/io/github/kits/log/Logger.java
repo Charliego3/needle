@@ -1,6 +1,7 @@
 package io.github.kits.log;
 
 import io.github.kits.Props;
+import io.github.kits.constants.Consts;
 import io.github.kits.enums.LogLevel;
 import io.github.kits.enums.Prop;
 
@@ -10,7 +11,6 @@ import java.util.Objects;
 
 import static io.github.kits.log.LogBuilder.getLevel;
 import static io.github.kits.log.LogBuilder.setLevels;
-import static io.github.kits.log.LogThread.addBody;
 
 /**
  * 日志工具类
@@ -24,8 +24,7 @@ public class Logger {
 	private static final boolean isAsyncPrint;
 
 	static {
-		isAsyncPrint = Props.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
-							.orElse(false);
+		isAsyncPrint = Props.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), Consts.LOG_ASYNC_PRINT_KEY).orElse(false);
 		if (isAsyncPrint) {
 			LogThread.start();
 		}
@@ -80,8 +79,9 @@ public class Logger {
 	}
 
 	private static void print(LogBody body) {
-		if (isAsyncPrint) {
-			addBody(body);
+		if (Props.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), Consts.LOG_ASYNC_PRINT_KEY).orElse(false)) {
+			LogThread.start();
+			LogBuilder.addBody(body);
 		} else {
 			try {
 				LogThread.print(body);

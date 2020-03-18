@@ -141,7 +141,7 @@ public class Strings {
 	}
 
 	/**
-	 * 将多个正则匹配到的内容替换为相同的内容
+	 * 将正则匹配到的内容替换为相同的内容
 	 *
 	 * @param resource    资源内容
 	 * @param replacement 替换的目标内容

@@ -11,4 +11,6 @@ public interface Consts {
 	String CRLF = System.lineSeparator();
 	String TAB  = "\t";
 
+	String LOG_ASYNC_PRINT_KEY = "--IS_ASYNC_PRINT--";
+
 }

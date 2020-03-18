@@ -139,9 +139,7 @@ public class LogThread implements Runnable {
 						logPath = logPath.replaceFirst("\\{WORKDIR}", logDirPath);
 						String dir = logPath.substring(0, logPath.lastIndexOf("/"));
 						File logDir = new File(dir);
-						if (!logDir.exists()) {
-							logDir.mkdirs();
-						}
+						if (!logDir.exists()) logDir.mkdirs();
 						String now = DateTimes.now(DateTimes.YYYYMMDD);
 						logPath = Strings.replace(logPath, now, "\\{D\\}");
 						logFile = new File(logPath);
@@ -167,7 +165,7 @@ public class LogThread implements Runnable {
 				if (Objects.isNull(mainThread)) {
 					mainThread = new Thread(logThread);
 					mainThread.setDaemon(true);
-					mainThread.setName("WINTER-LOGGER");
+					mainThread.setName("NEEDLE-LOGGER");
 					mainThread.start();
 				}
 			}

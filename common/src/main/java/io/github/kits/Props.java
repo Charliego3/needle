@@ -27,13 +27,14 @@ public final class Props {
 
 	private final static String TIMER_TASK_NAME = "Properties-Reload";
 
-	private Props() {}
+	private Props() {
+	}
 
 	/**
 	 * Properties cache
 	 */
 	private static final ConcurrentHashMap<File, Properties> PROP_CACHE;
-	private static final ConcurrentHashMap<String, File> PROP_FILE_CACHE;
+	private static final ConcurrentHashMap<String, File>     PROP_FILE_CACHE;
 
 	/**
 	 * Get the default configuration file
@@ -104,42 +105,58 @@ public final class Props {
 	 * @param key        key
 	 * @param properties Properties
 	 */
-	private static void put(File key, Properties properties) {
+	public static void put(File key, Properties properties) {
 		properties.setProperty(LAST_MODIFY_TIME, String.valueOf(key.lastModified()));
 		PROP_CACHE.put(key, properties);
 	}
 
 	/**
+	 * Add a new properties to the cache
+	 *
+	 * @param key   key
+	 * @param value value
+	 */
+	public static void put(String fileName, String key, String value) {
+		File file = PROP_FILE_CACHE.get(fileName);
+		file = Objs.nullDefault(file, new File(fileName));
+		Properties properties = getProperties(fileName).orElse(new Properties());
+		properties.setProperty(LAST_MODIFY_TIME, String.valueOf(file.lastModified()));
+		properties.setProperty(key, value);
+		PROP_FILE_CACHE.put(fileName, file);
+		PROP_CACHE.put(file, properties);
+	}
+
+	/**
 	 * Get the corresponding value from the path according to the key
 	 *
-	 * @param fileName      file path
-	 * @param key           key
+	 * @param fileName file path
+	 * @param key      key
 	 * @return The value obtained from the key
 	 */
-    public static Optional<Object> getProperty(String fileName, String key) {
+	public static Optional<Object> getProperty(String fileName, String key) {
 		return getProperties(fileName).map(prop -> prop.get(key));
-    }
+	}
 
 	/**
 	 * Get the value corresponding to the key from the file
 	 *
-	 * @param file          File object
-	 * @param key           key
+	 * @param file File object
+	 * @param key  key
 	 * @return The value obtained from the key
 	 */
-    public static Optional<Object> getProperty(File file, String key) {
-        return getProperties(file).map(prop -> prop.get(key));
-    }
+	public static Optional<Object> getProperty(File file, String key) {
+		return getProperties(file).map(prop -> prop.get(key));
+	}
 
 	/**
 	 * Get the value from the default configuration file according to the key
 	 *
-	 * @param key           key
+	 * @param key key
 	 * @return The value obtained from the key
 	 */
-    public static Optional<Object> getProperty(String key) {
+	public static Optional<Object> getProperty(String key) {
 		return getProperties(getDefaultConfig()).map(prop -> prop.get(key));
-    }
+	}
 
 	/**
 	 * Get the value from the specified path file according to the key
@@ -405,16 +422,16 @@ public final class Props {
 
 			if (!PROP_CACHE.containsKey(file)) {
 				Properties properties = new Properties();
-				String content = null;
+				String     content    = null;
 				if (!file.getPath().contains("!" + File.separator)) {
 					byte[] bytes = Files.loadFile(file);
 					if (bytes != null) {
 						content = new String(bytes);
 					}
 				} else {
-					String filePath = file.getPath();
+					String filePath     = file.getPath();
 					String resourcePath = filePath.substring(filePath.indexOf("!" + File.separator) + 2);
-					byte[] bytes = Files.loadResourceFile(resourcePath);
+					byte[] bytes        = Files.loadResourceFile(resourcePath);
 					if (bytes != null) {
 						content = new String(bytes);
 					}
