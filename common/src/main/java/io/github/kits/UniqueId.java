@@ -17,17 +17,17 @@ public class UniqueId {
 	private static final int RADIX        = 62;
 	private static final int sequenceLeft = 12;
 	private static final int signIdLeft   = 10;
-	private static final int maxsignId    = 1 << signIdLeft;
+	private static final int maxSignId    = 1 << signIdLeft;
 
 	private static volatile AtomicInteger orderedIdSequence = new AtomicInteger(SEQ_DEFAULT);
 	private static          Long          lastTime          = 0L;
 	private static          int           workId            = 0;
 
 	static {
-		int signId = PropertiesKit.getInt("unique_seed_id")
-								  .orElse(new Random().nextInt());
-		Assert.predicate(() -> workId > maxsignId || signId < 0,
-				new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxsignId)));
+		int signId = Props.getInt("unique_seed_id")
+						  .orElse(new Random().nextInt());
+		Assert.predicate(() -> workId > maxSignId || signId < 0,
+				new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxSignId)));
 		workId = signId;
 	}
 

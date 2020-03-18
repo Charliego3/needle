@@ -1,6 +1,6 @@
 package io.github.kits.configuration;
 
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -20,7 +20,7 @@ class IntValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getInt(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getInt(fileName, key), defaultValue);
     }
 
 }
@@ -29,7 +29,7 @@ class StringValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getString(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getString(fileName, key), defaultValue);
     }
 
 }
@@ -38,7 +38,7 @@ class BooleanValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getBoolean(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getBoolean(fileName, key), defaultValue);
     }
 
 }
@@ -47,7 +47,7 @@ class LongValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getLong(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getLong(fileName, key), defaultValue);
     }
 
 }
@@ -56,7 +56,7 @@ class ShortValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getShort(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getShort(fileName, key), defaultValue);
     }
 
 }
@@ -65,7 +65,7 @@ class FloatValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getFloat(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getFloat(fileName, key), defaultValue);
     }
 
 }
@@ -74,7 +74,7 @@ class DoubleValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getDouble(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getDouble(fileName, key), defaultValue);
     }
 
 }
@@ -83,7 +83,7 @@ class PropValueConfiguration extends ValueConfiguration {
 
     @Override
     public Object getProp(String[] fileNames, String key, String defaultValue) {
-        return ConfigurationKit.getValue(fileNames, fileName -> PropertiesKit.getString(fileName, key), defaultValue);
+        return ConfigurationKit.getValue(fileNames, fileName -> Props.getString(fileName, key), defaultValue);
     }
 
 }

@@ -3,7 +3,7 @@ package io.github.kits.log;
 import io.github.kits.DateTimes;
 import io.github.kits.Envs;
 import io.github.kits.Files;
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.Strings;
 import io.github.kits.cache.PatternCache;
 import io.github.kits.enums.Color;
@@ -64,8 +64,8 @@ public class LogBuilder {
 	private static final AtomicInteger THREAD_ID_INDENT_LENGTH   = new AtomicInteger(0);
 
 	static {
-		template = PropertiesKit.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "template").orElse("{BF30}[{L}]{FE} [{F4}{D}{FE}] {F32}[{TL15}:{TIL2}]{FE} {F36}[{SCL33}:{CLL3}]{FE}{F91}:{FE} {I}");
-		level = PropertiesKit.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "level").orElse("INFO,WARN,ERROR");
+		template = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "template").orElse("{BF30}[{L}]{FE} [{F4}{D}{FE}] {F32}[{TL15}:{TIL2}]{FE} {F36}[{SCL33}:{CLL3}]{FE}{F91}:{FE} {I}");
+		level = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "level").orElse("INFO,WARN,ERROR");
 		isTemplateColorful = Strings.regexFind(template, COLOR_REGEX);
 		Matcher classMatcher = PatternCache.get(CLASS_REGEX).matcher(template);
 		if (classMatcher.find()) {

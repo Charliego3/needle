@@ -21,13 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0.0
  * @since 1.0.0
  */
-public final class PropertiesKit {
+public final class Props {
 
 	private final static String LAST_MODIFY_TIME = "$$LMT$$";
 
 	private final static String TIMER_TASK_NAME = "PropertiesKit-Reload";
 
-	private PropertiesKit() {}
+	private Props() {}
 
 	/**
 	 * Properties cache
@@ -480,8 +480,8 @@ public final class PropertiesKit {
 		 */
 		PROP_CACHE = new ConcurrentHashMap<>();
 		PROP_FILE_CACHE = new ConcurrentHashMap<>();
-		Boolean isAsync = PropertiesKit.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
-									   .orElse(false);
+		Boolean isAsync = Props.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
+							   .orElse(false);
 		if (isAsync) {
 			TimedTask.addTask(TIMER_TASK_NAME, prop -> {
 				if (Maps.isNotNullOrEmpty(PROP_CACHE)) {

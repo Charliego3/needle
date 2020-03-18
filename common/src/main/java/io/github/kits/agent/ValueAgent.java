@@ -1,7 +1,7 @@
 package io.github.kits.agent;
 
 import io.github.kits.Lambdas;
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.Strings;
 import io.github.kits.annotations.Value;
 import io.github.kits.log.Logger;
@@ -36,7 +36,7 @@ public class ValueAgent {
 		try {
 			ctFields.forEach(Lambdas.rethrowConsumer(ctField -> {
 				Value valueAnn = (Value) ctField.getAnnotation(Value.class);
-				cp.importPackage(PropertiesKit.class.getCanonicalName());
+				cp.importPackage(Props.class.getCanonicalName());
 				setValueBody(ctClass, ctField, valueAnn);
 				cp.importPackage(BigDecimal.class.getCanonicalName());
 			}));

@@ -1,6 +1,6 @@
 package io.github.kits.log;
 
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.enums.LogLevel;
 import io.github.kits.enums.Prop;
 
@@ -24,8 +24,8 @@ public class Logger {
 	private static final boolean isAsyncPrint;
 
 	static {
-		isAsyncPrint = PropertiesKit.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
-									.orElse(false);
+		isAsyncPrint = Props.getBoolean(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "--IS_ASYNC_PRINT--")
+							.orElse(false);
 		if (isAsyncPrint) {
 			LogThread.start();
 		}

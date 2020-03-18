@@ -1,4 +1,4 @@
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.log.Logger;
 import junit.framework.TestCase;
 
@@ -26,20 +26,20 @@ public class ProptiesKitTest extends TestCase {
 //		URL    resource = FileKit.class.getClassLoader().getResource(filePath);
 //		Logger.info(resource.getFile());
 		Logger.info("haha");
-		String prop = PropertiesKit.getString(new File(filePath), "LogType").orElse(null);
+		String prop = Props.getString(new File(filePath), "LogType").orElse(null);
 		Logger.info(prop);
-		prop = PropertiesKit.getString(new File(filePath), "LogPath").orElse(null);
+		prop = Props.getString(new File(filePath), "LogPath").orElse(null);
 		Logger.info(prop);
-		prop = PropertiesKit.getString(new File(filePath), "LogLevelsss").orElse(null);
+		prop = Props.getString(new File(filePath), "LogLevelsss").orElse(null);
 		Logger.info(prop);
-		prop = PropertiesKit.getString(new File("/Users/nzlong/dev/project/Backstage/winter/common/src/test/resources/sdfsdf.properties"), "LogLevelsss").orElse(null);
+		prop = Props.getString(new File("/Users/nzlong/dev/project/Backstage/winter/common/src/test/resources/sdfsdf.properties"), "LogLevelsss").orElse(null);
 		Logger.info(prop);
-		prop = PropertiesKit.getString(new File("/Users/nzlong/dev/project/Backstage/winter/common/src/test/resources/sdfsdf.properties"), "LogPath").orElse(null);
+		prop = Props.getString(new File("/Users/nzlong/dev/project/Backstage/winter/common/src/test/resources/sdfsdf.properties"), "LogPath").orElse(null);
 		Logger.info(prop);
 	}
 
 	public void testGet() {
-		String log = PropertiesKit.getString("logger", "LogType").orElse("logger.properties.log is null");
+		String log = Props.getString("logger", "LogType").orElse("logger.properties.log is null");
 		Logger.error(log);
 	}
 

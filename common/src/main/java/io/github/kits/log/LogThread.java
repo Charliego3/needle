@@ -3,7 +3,7 @@ package io.github.kits.log;
 import io.github.kits.Colors;
 import io.github.kits.DateTimes;
 import io.github.kits.Envs;
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.Strings;
 import io.github.kits.enums.Prop;
 
@@ -34,8 +34,8 @@ public class LogThread implements Runnable {
 	static {
 		logThread = new LogThread();
 		queue = new LinkedBlockingDeque<>();
-		logPath = PropertiesKit.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "path").orElse("{WORKDIR}/sysout.{D}.log");
-		type = PropertiesKit.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "type").orElse("STDOUT");
+		logPath = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "path").orElse("{WORKDIR}/sysout.{D}.log");
+		type = Props.getString(Prop.DEFAULT_LOGGER_PROPERTIES.getProp(), "type").orElse("STDOUT");
 		setOutputStreams(getOutputStreams());
 	}
 
