@@ -25,7 +25,7 @@ public final class Props {
 
 	private final static String LAST_MODIFY_TIME = "$$LMT$$";
 
-	private final static String TIMER_TASK_NAME = "PropertiesKit-Reload";
+	private final static String TIMER_TASK_NAME = "Properties-Reload";
 
 	private Props() {}
 
