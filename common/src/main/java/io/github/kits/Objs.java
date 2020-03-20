@@ -8,4 +8,16 @@ public class Objs {
 		return Objects.isNull(object) ? defaultValue : object;
 	}
 
+	public static boolean isAllNull(Object... objects) {
+		if (Objects.isNull(objects) || objects.length <= 0) {
+			return true;
+		}
+		for (Object object : objects) {
+			if (Objects.nonNull(object)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

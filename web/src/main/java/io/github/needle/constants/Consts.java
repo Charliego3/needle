@@ -1,6 +1,6 @@
 package io.github.needle.constants;
 
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.needle.annotations.Order;
 
 import java.util.Comparator;
@@ -15,7 +15,7 @@ public interface Consts {
 
 	String DEFAULT_HOST        = "0.0.0.0";
 	int    DEFAULT_PORT        = 9000;
-	String DEFAULT_SERVER_NAME = PropertiesKit.getString("server.name").orElse("NEEDLE");
+	String DEFAULT_SERVER_NAME = Props.getString("server.name").orElse("NEEDLE");
 	String CRLF                = "\r\n";
 
 	interface PropArgs {

@@ -12,6 +12,7 @@
     <modules>
         <module>common</module>
         <module>web</module>
+	    <module>network</module>
     </modules>
 
     <name>needle-parent</name>

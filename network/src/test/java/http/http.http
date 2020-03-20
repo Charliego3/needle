@@ -1,0 +1,20 @@
+# curl -X "POST" "http://127.0.0.1:2048/test1"
+#     -H 'Accept: application/json'
+#     -H 'Content-Type: application/json; charset=utf-8'
+#     -d '{"id": "1","name": "whimthen","age": "20"}'
+POST http://127.0.0.1:2048/test1
+Accept: application/json
+Content-Type: application/json; charset=utf-8
+
+{
+    "id": "1",
+    "name": "whimthen",
+    "age": "20"
+}
+
+###
+
+GET http://127.0.0.1:2048/api/item?id=99
+Accept: application/json
+
+###

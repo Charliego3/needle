@@ -38,7 +38,7 @@ public class Colors {
      * @param arg   需要转换的字符串
      * @return      转换后的字符串
      */
-    public static String toBule(String arg) {
+    public static String toBlue(String arg) {
         return convertToColor(BLUE.getContent(), arg, false);
     }
 
@@ -48,7 +48,7 @@ public class Colors {
      * @param arg   需要转换的字符串
      * @return      转换后的字符串
      */
-    public static String toBuleBold(String arg) {
+    public static String toBlueBold(String arg) {
         return convertToColor(BLUE.getContent(), arg, true);
     }
 
@@ -238,7 +238,7 @@ public class Colors {
      * @param arg   需要转换的字符串
      * @return      转换后的字符串
      */
-    public static String toBuleLess(String arg) {
+    public static String toBlueLess(String arg) {
         return convertToColor(BLUE_LESS.getContent(), arg, false);
     }
 
@@ -256,7 +256,7 @@ public class Colors {
      * @param arg   需要转换的字符串
      * @return      转换后的字符串
      */
-    static String toBuleLessBold(String arg) {
+    public static String toBlueLessBold(String arg) {
         return convertToColor(BLUE_LESS.getContent(), arg, true);
     }
 

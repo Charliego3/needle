@@ -3,7 +3,7 @@ package io.github.needle;
 import io.github.kits.Colors;
 import io.github.kits.Envs;
 import io.github.kits.Files;
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.Strings;
 import io.github.kits.log.LogThread;
 import io.github.kits.log.Logger;
@@ -126,7 +126,7 @@ class ServerStartupHandler {
 	 * Load from Properties file
 	 */
 	void buildServeConfigFromProperties() {
-		PropertiesKit.getProperties(PropertiesKit.getDefaultConfig()).ifPresent(properties -> {
+		Props.getProperties(Props.getDefaultConfig()).ifPresent(properties -> {
 			// port
 			String port = properties.getProperty(Consts.PropArgs.port);
 			if (ServeConfig.getInstance().getPort() <= 0 && Strings.isNotNullOrEmpty(port))

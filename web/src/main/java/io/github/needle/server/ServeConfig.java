@@ -1,6 +1,6 @@
 package io.github.needle.server;
 
-import io.github.kits.PropertiesKit;
+import io.github.kits.Props;
 import io.github.kits.Strings;
 import io.github.needle.bean.Singleton;
 import io.github.needle.constants.Consts;
@@ -62,7 +62,7 @@ public class ServeConfig {
 	}
 
 	private ServeConfig() {
-		serverVersion = PropertiesKit.getString("maven-version", "server.version").orElse("1.0.0-RELEASE");
+		serverVersion = Props.getString("maven-version", "server.version").orElse("1.0.0-RELEASE");
 	}
 
 	private static class ServeConfigHolder {

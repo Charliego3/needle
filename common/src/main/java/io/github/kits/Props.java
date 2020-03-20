@@ -444,7 +444,7 @@ public final class Props {
 				properties.load(new StringReader(content));
 				properties.setProperty(LAST_MODIFY_TIME, String.valueOf(file.lastModified()));
 				PROP_CACHE.put(file, properties);
-				Logger.infof("Load properties file: {}", Colors.toBuleBold("[" + file.getAbsolutePath() + "]"));
+				Logger.infof("Load properties file: {}", Colors.toBlueBold("[" + file.getAbsolutePath() + "]"));
 			}
 
 			return Optional.ofNullable(PROP_CACHE.get(file));
