@@ -4,7 +4,7 @@ public class PrefixTree {
 
 
 	public class Node {
-		private Node node;
+//		private Node node;
 		private NodeType nType;
 		private String path;
 
@@ -20,7 +20,7 @@ public class PrefixTree {
 		private boolean wildChild;
 
 		/**
-		 * 是否以 * 结尾的路由
+		 * 是否是通配符节点
 		 */
 		private boolean catchAll;
 	}
