@@ -15,15 +15,17 @@ public class HttpServerTest extends TestCase {
 					  .filter(new CustomerFilter())
 					  .requestFilter(this::reqFilter)
 					  .responseFilter(this::resFilter)
-					  .handle(HttpMethod.GET, "/test", this::tHandler)
-					  .handle(HttpMethod.POST, "/test", this::t1Handler)
-					  .handle(HttpMethod.OPTIONS, "/test", this::t1Handler)
-					  .handle(HttpMethod.CONNECT, "/test", this::t1Handler)
-					  .handle(HttpMethod.DELETE, "/test", this::t1Handler)
-					  .handle(HttpMethod.HEAD, "/test", this::t1Handler)
-					  .handle(HttpMethod.PUT, "/test", this::t1Handler)
-					  .handle(HttpMethod.TRACE, "/test", this::t1Handler)
-					  .handle(HttpMethod.PATCH, "/test", this::t1Handler)
+					  .handle("/test", this::tHandler,
+							  HttpMethod.GET,
+							  HttpMethod.POST,
+							  HttpMethod.CONNECT,
+							  HttpMethod.DELETE,
+							  HttpMethod.HEAD,
+							  HttpMethod.PUT,
+							  HttpMethod.TRACE,
+							  HttpMethod.PATCH,
+							  HttpMethod.OPTIONS)
+					  .handle("/test1", this::t1Handler, HttpMethod.POST)
 //					  .handle("/test11", this::t1Handler)
 //					  .handle("/test12", this::t1Handler)
 //					  .handle("/test13", this::t1Handler)
