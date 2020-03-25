@@ -1,5 +1,6 @@
 package io.github.needle.http;
 
+import io.github.kits.Maps;
 import io.github.kits.Objs;
 import io.github.kits.Strings;
 import io.github.needle.http.exception.NotFundException;
@@ -15,7 +16,7 @@ public class ServeMux implements Mux {
 	/**
 	 * HttpHandler container
 	 */
-	private Map<String, MuxEntry> entries;
+	private Map<HttpMethod, Map<String, HttpHandler>> entries;
 
 	private ServeMux() {
 		entries = new ConcurrentHashMap<>();
@@ -31,7 +32,7 @@ public class ServeMux implements Mux {
 		private static final ServeMux INSTANCE = new ServeMux();
 	}
 
-	public Map<String, MuxEntry> getEntries() {
+	public Map<HttpMethod, Map<String, HttpHandler>> getEntries() {
 		return entries;
 	}
 
@@ -43,16 +44,21 @@ public class ServeMux implements Mux {
 	 */
 	@Override
 	public synchronized void handle(HttpMethod method, String pattern, HttpHandler handler) {
-		MuxEntry muxEntry = new MuxEntry(method, handler);
-		this.entries.put(pattern, muxEntry);
+		Map<String, HttpHandler> handlerMap = this.entries.get(method);
+		handlerMap = Objs.nullDefault(handlerMap, () -> {
+			Map<String, HttpHandler> map = new ConcurrentHashMap<>();
+			this.entries.put(method, map);
+			return map;
+		});
+		handlerMap.put(pattern, handler);
 	}
 
 	@Override
 	public HttpHandler search(HttpMethod method, String pattern) {
-		if (this.entries.containsKey(pattern)) {
-			MuxEntry muxEntry = this.entries.get(pattern);
-			if (Objs.nullDefault(muxEntry.getMethod(), method).equals(method)) {
-				return muxEntry.getHandler();
+		if (this.entries.containsKey(method)) {
+			Map<String, HttpHandler> muxEntry = this.entries.get(method);
+			if (Maps.isNotNullOrEmpty(muxEntry) && muxEntry.containsKey(pattern)) {
+				return muxEntry.get(pattern);
 			}
 		}
 		throw new NotFundException(Strings.concat("Not find handler with pattern: [", pattern, "]"));
