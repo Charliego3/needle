@@ -22,12 +22,9 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,11 +34,11 @@ public class HttpServer {
 	private final        LinkedList<ShutdownListener> shutdownListeners;
 
 	private Mux                         mux;
-	private List<Map<String, MuxEntry>> tempMuxHandler;
+	private Map<HttpMethod, Map<String, HttpHandler>> tempMuxHandler;
 	private AcceptListener              listener;
 
 	public HttpServer() {
-		this.tempMuxHandler = new ArrayList<>();
+		this.tempMuxHandler = new ConcurrentHashMap<>();
 		this.shutdownListeners = new LinkedList<>();
 		this.shutdownListeners.add(() -> {
 			close();
@@ -57,31 +54,26 @@ public class HttpServer {
 		return new HttpServer();
 	}
 
-	public HttpServer handle(String pattern, HttpHandler handler) {
-		return handle(null, pattern, handler);
-	}
-
-	public HttpServer handle(HttpMethod method, String pattern, HttpHandler handler) {
+	public HttpServer handle(String pattern, HttpHandler handler, HttpMethod... methods) {
 		Assert.isNotNullEmptyBlack(pattern, new HandlerException("invalid pattern"));
 		Assert.isNotNull(handler, new HandlerException("null handler. pattern: " + pattern));
 		if (!pattern.startsWith("/")) {
 			pattern = "/" + pattern;
 		}
 		pattern = Strings.replace(pattern, "/", "[/]+");
-		String finalPattern = pattern;
-		this.tempMuxHandler.forEach(muxHandler -> {
-			if (muxHandler.containsKey(finalPattern)) {
-				MuxEntry existsEntry = muxHandler.get(finalPattern);
-				if (Objs.isAllNull(existsEntry.getMethod(), method) ||
-						(Objects.nonNull(existsEntry.getMethod()) && existsEntry.getMethod().equals(method))) {
-					throw new HandlerException(Strings.concat("multiple pattern registrations for [", finalPattern, "]"));
-				}
+		methods = Objs.nullDefault(methods.length == 0 ? null : methods, HttpMethod.values());
+		for (HttpMethod method : methods) {
+			Map<String, HttpHandler> muxEntryMap = this.tempMuxHandler.get(method);
+			muxEntryMap = Objs.nullDefault(muxEntryMap, () -> {
+				Map<String, HttpHandler> entryMap = new ConcurrentHashMap<>();
+				this.tempMuxHandler.put(method, entryMap);
+				return entryMap;
+			});
+			if (muxEntryMap.containsKey(pattern)) {
+				throw new HandlerException(Strings.concat("multiple pattern registrations for ", method.name(), " - [", pattern, "]"));
 			}
-		});
-		MuxEntry              muxEntry  = new MuxEntry(method, handler);
-		Map<String, MuxEntry> tempEntry = new HashMap<>();
-		tempEntry.put(pattern, muxEntry);
-		this.tempMuxHandler.add(tempEntry);
+			muxEntryMap.put(pattern, handler);
+		}
 		return this;
 	}
 
@@ -137,15 +129,13 @@ public class HttpServer {
 		}
 		this.mux = Objs.nullDefault(mux, ServeMux.DEFAULT_MUX);
 		AtomicInteger max = new AtomicInteger(0);
-		this.tempMuxHandler.forEach(t -> t.forEach((k, v) -> {
-			this.mux.handle(v.getMethod(), k, v.getHandler());
-			if (Objects.nonNull(v.getMethod())) {
-				int length = v.getMethod().name().toCharArray().length;
-				if (max.get() < length) {
-					max.set(length);
-				}
+		this.tempMuxHandler.forEach((m, es) -> {
+			es.forEach((p, h) -> this.mux.handle(m, p, h));
+			int length = m.name().toCharArray().length;
+			if (max.get() < length) {
+				max.set(length);
 			}
-		}));
+		});
 		this.tempMuxHandler = null;
 		Logger.errorf("MaxHandler Method length: {}", max.get());
 		printHandler(max.intValue());
@@ -163,16 +153,14 @@ public class HttpServer {
 
 	private void printHandler(final int maxLength) {
 		if (this.mux instanceof ServeMux) {
-			((ServeMux) this.mux).getEntries().forEach((p, e) -> {
+			((ServeMux) this.mux).getEntries().forEach((method, muxEntry) -> {
 				if (maxLength == 0) {
-					Logger.infof("Register HttpHandler: {}", p);
+					Logger.infof("Register HttpHandler: {}", method);
 				} else {
-					String methodName = Objects.isNull(e.getMethod()) ? "ALL" : e.getMethod().name();
-					methodName = Strings.indentRight(methodName, maxLength);
-					if (Objects.isNull(e.getMethod())) {
-						methodName = Colors.toGreenBold(methodName);
-					} else {
-						switch (e.getMethod()) {
+					muxEntry.forEach((pattern, handler) -> {
+						String methodName = method.name();
+						methodName = Strings.indentRight(methodName, maxLength);
+						switch (method) {
 							case GET:
 								methodName = Colors.toBlueBold(methodName);
 								break;
@@ -184,7 +172,7 @@ public class HttpServer {
 								break;
 							case DELETE:
 								if (maxLength > 6) {
-									methodName = Colors.toUnderLineBold(e.getMethod().name()) + " ";
+									methodName = Colors.toUnderLineBold(method.name()) + " ";
 								} else {
 									methodName = Colors.toUnderLineBold(methodName);
 								}
@@ -205,8 +193,8 @@ public class HttpServer {
 								methodName = Colors.toBackgroundBold(methodName);
 								break;
 						}
-					}
-					Logger.infof("Register HttpHandler: {} {} {}", methodName, "->", p);
+						Logger.infof("Register HttpHandler: {} {} {}", methodName, "->", pattern);
+					});
 				}
 			});
 		}
