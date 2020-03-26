@@ -25,7 +25,7 @@ public class HttpServerTest extends TestCase {
 							  HttpMethod.TRACE,
 							  HttpMethod.PATCH,
 							  HttpMethod.OPTIONS)
-					  .handle("/test1", this::t1Handler, HttpMethod.POST)
+					  .handle("/test1", this::t1Handler)
 //					  .handle("/test11", this::t1Handler)
 //					  .handle("/test12", this::t1Handler)
 //					  .handle("/test13", this::t1Handler)

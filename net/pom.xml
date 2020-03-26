@@ -9,7 +9,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>needle-network</artifactId>
+	<name>needle-net</name>
+	<artifactId>needle-net</artifactId>
 
 	<dependencies>
 		<dependency>
@@ -22,4 +23,8 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<finalName>needle-net</finalName>
+	</build>
 </project>
