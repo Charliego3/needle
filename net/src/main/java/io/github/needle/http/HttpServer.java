@@ -61,7 +61,7 @@ public class HttpServer {
 			pattern = "/" + pattern;
 		}
 		pattern = Strings.replace(pattern, "/", "[/]+");
-		methods = Objs.nullDefault(methods.length == 0 ? null : methods, HttpMethod.values());
+		methods = Objs.nullDefault(methods, HttpMethod.values());
 		for (HttpMethod method : methods) {
 			Map<String, HttpHandler> muxEntryMap = this.tempMuxHandler.get(method);
 			muxEntryMap = Objs.nullDefault(muxEntryMap, () -> {
