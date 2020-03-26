@@ -16,7 +16,7 @@ public class ServeMux implements Mux {
 	/**
 	 * HttpHandler container
 	 */
-	private Map<HttpMethod, Map<String, HttpHandler>> entries;
+	private final Map<HttpMethod, Map<String, HttpHandler>> entries;
 
 	private ServeMux() {
 		entries = new ConcurrentHashMap<>();
