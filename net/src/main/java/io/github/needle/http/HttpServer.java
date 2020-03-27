@@ -32,12 +32,14 @@ public class HttpServer {
 
 	private static final AtomicBoolean                CLOSED = new AtomicBoolean(false);
 	private final        LinkedList<ShutdownListener> shutdownListeners;
+	private final        AtomicInteger                maxMethodLength;
 
-	private Mux                         mux;
-	private Map<HttpMethod, Map<String, HttpHandler>> tempMuxHandler;
-	private AcceptListener              listener;
+	private Mux                   mux;
+	private Map<String, MuxEntry> tempMuxHandler;
+	private AcceptListener        listener;
 
 	public HttpServer() {
+		this.maxMethodLength = new AtomicInteger(0);
 		this.tempMuxHandler = new ConcurrentHashMap<>();
 		this.shutdownListeners = new LinkedList<>();
 		this.shutdownListeners.add(() -> {
@@ -61,18 +63,23 @@ public class HttpServer {
 			pattern = "/" + pattern;
 		}
 		pattern = Strings.replace(pattern, "/", "[/]+");
-		methods = Objs.nullDefault(methods, HttpMethod.values());
+		methods = Objs.nullDefault(methods, new HttpMethod[]{HttpMethod.ALL});
 		for (HttpMethod method : methods) {
-			Map<String, HttpHandler> muxEntryMap = this.tempMuxHandler.get(method);
-			muxEntryMap = Objs.nullDefault(muxEntryMap, () -> {
-				Map<String, HttpHandler> entryMap = new ConcurrentHashMap<>();
-				this.tempMuxHandler.put(method, entryMap);
-				return entryMap;
-			});
-			if (muxEntryMap.containsKey(pattern)) {
-				throw new HandlerException(Strings.concat("multiple pattern registrations for ", method.name(), " - [", pattern, "]"));
+			String key = ServeMux.buildKey(method, pattern);
+			if (this.tempMuxHandler.containsKey(key)) {
+				String err;
+				if (HttpMethod.ALL.equals(method)) {
+					err = Strings.concat("multiple pattern registrations for [", pattern, "]");
+				} else {
+					err = Strings.concat("multiple pattern registrations for ", method.name(), " - [", pattern, "]");
+				}
+				throw new HandlerException(err);
 			}
-			muxEntryMap.put(pattern, handler);
+			this.tempMuxHandler.put(key, new MuxEntry(method, pattern, handler));
+			int methodLength = method.name().toCharArray().length;
+			if (this.maxMethodLength.intValue() < methodLength) {
+				this.maxMethodLength.set(methodLength);
+			}
 		}
 		return this;
 	}
@@ -128,17 +135,19 @@ public class HttpServer {
 			address = new InetSocketAddress(host, port);
 		}
 		this.mux = Objs.nullDefault(mux, ServeMux.DEFAULT_MUX);
-		AtomicInteger max = new AtomicInteger(0);
-		this.tempMuxHandler.forEach((m, es) -> {
-			es.forEach((p, h) -> this.mux.handle(m, p, h));
-			int length = m.name().toCharArray().length;
-			if (max.get() < length) {
-				max.set(length);
-			}
+//		this.tempMuxHandler.forEach((m, es) -> {
+//			es.forEach((p, h) -> this.mux.handle(m, p, h));
+//			int length = m.name().toCharArray().length;
+//			if (max.get() < length) {
+//				max.set(length);
+//			}
+//		});
+		this.tempMuxHandler.forEach((key, entry) -> {
+			this.mux.handle(entry.getMethod(), entry.getPattern(), entry.getHandler());
 		});
 		this.tempMuxHandler = null;
-		Logger.errorf("MaxHandler Method length: {}", max.get());
-		printHandler(max.intValue());
+		Logger.errorf("MaxHandler Method length: {}", maxMethodLength.get());
+		printHandler();
 		Selector            selector     = Selector.open();
 		ServerSocketChannel serverSocket = selector.provider().openServerSocketChannel();
 		serverSocket.configureBlocking(false);
@@ -151,50 +160,52 @@ public class HttpServer {
 		this.listener.onServe();
 	}
 
-	private void printHandler(final int maxLength) {
+	private void printHandler() {
 		if (this.mux instanceof ServeMux) {
-			((ServeMux) this.mux).getEntries().forEach((method, muxEntry) -> {
+			final int maxLength = this.maxMethodLength.get();
+			((ServeMux) this.mux).getEntries().forEach((key, entry) -> {
 				if (maxLength == 0) {
-					Logger.infof("Register HttpHandler: {}", method);
+					Logger.infof("Register HttpHandler: {}", entry.getPattern());
 				} else {
-					muxEntry.forEach((pattern, handler) -> {
-						String methodName = method.name();
-						methodName = Strings.indentRight(methodName, maxLength);
-						switch (method) {
-							case GET:
-								methodName = Colors.toBlueBold(methodName);
-								break;
-							case POST:
-								methodName = Colors.toRedBold(methodName);
-								break;
-							case PUT:
-								methodName = Colors.toYellowBold(methodName);
-								break;
-							case DELETE:
-								if (maxLength > 6) {
-									methodName = Colors.toUnderLineBold(method.name()) + " ";
-								} else {
-									methodName = Colors.toUnderLineBold(methodName);
-								}
-								break;
-							case OPTIONS:
-								methodName = Colors.toGrayBold(methodName);
-								break;
-							case HEAD:
-								methodName = Colors.toCanaryBold(methodName);
-								break;
-							case PATCH:
-								methodName = Colors.toGrayMoreBold(methodName);
-								break;
-							case TRACE:
-								methodName = Colors.toBlueLessBold(methodName);
-								break;
-							case CONNECT:
-								methodName = Colors.toBackgroundBold(methodName);
-								break;
-						}
-						Logger.infof("Register HttpHandler: {} {} {}", methodName, "->", pattern);
-					});
+					String methodName = entry.getMethod().name();
+					methodName = Strings.indentRight(methodName, maxLength);
+					switch (entry.getMethod()) {
+						case GET:
+							methodName = Colors.toBlueBold(methodName);
+							break;
+						case POST:
+							methodName = Colors.toRedBold(methodName);
+							break;
+						case PUT:
+							methodName = Colors.toYellowBold(methodName);
+							break;
+						case DELETE:
+							if (maxLength > 6) {
+								methodName = Colors.toUnderLineBold(entry.getMethod().name()) + " ";
+							} else {
+								methodName = Colors.toUnderLineBold(methodName);
+							}
+							break;
+						case OPTIONS:
+							methodName = Colors.toGrayBold(methodName);
+							break;
+						case HEAD:
+							methodName = Colors.toCanaryBold(methodName);
+							break;
+						case PATCH:
+							methodName = Colors.toGrayMoreBold(methodName);
+							break;
+						case TRACE:
+							methodName = Colors.toBlueLessBold(methodName);
+							break;
+						case CONNECT:
+							methodName = Colors.toBackgroundBold(methodName);
+							break;
+						default:
+							methodName = Colors.toWhiteBold(methodName);
+							break;
+					}
+					Logger.infof("Register HttpHandler: {} {} {}", methodName, "->", entry.getPattern());
 				}
 			});
 		}
