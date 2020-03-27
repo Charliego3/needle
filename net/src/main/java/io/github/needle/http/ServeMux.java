@@ -1,11 +1,7 @@
 package io.github.needle.http;
 
-import io.github.kits.Maps;
-import io.github.kits.Objs;
-import io.github.kits.Strings;
-import io.github.needle.http.exception.NotFundException;
-
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -13,10 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServeMux implements Mux {
 
+	public static final String PATTERN_SEPARATOR = "###";
+
 	/**
 	 * HttpHandler container
 	 */
-	private final Map<HttpMethod, Map<String, HttpHandler>> entries;
+	private final Map<String, MuxEntry> entries;
 
 	private ServeMux() {
 		entries = new ConcurrentHashMap<>();
@@ -32,7 +30,7 @@ public class ServeMux implements Mux {
 		private static final ServeMux INSTANCE = new ServeMux();
 	}
 
-	public Map<HttpMethod, Map<String, HttpHandler>> getEntries() {
+	public Map<String, MuxEntry> getEntries() {
 		return entries;
 	}
 
@@ -44,24 +42,27 @@ public class ServeMux implements Mux {
 	 */
 	@Override
 	public synchronized void handle(HttpMethod method, String pattern, HttpHandler handler) {
-		Map<String, HttpHandler> handlerMap = this.entries.get(method);
-		handlerMap = Objs.nullDefault(handlerMap, () -> {
-			Map<String, HttpHandler> map = new ConcurrentHashMap<>();
-			this.entries.put(method, map);
-			return map;
-		});
-		handlerMap.put(pattern, handler);
+		String key = buildKey(method, pattern);
+		this.entries.put(key, new MuxEntry(method, pattern, handler));
 	}
 
 	@Override
 	public HttpHandler search(HttpMethod method, String pattern) {
-		if (this.entries.containsKey(method)) {
-			Map<String, HttpHandler> muxEntry = this.entries.get(method);
-			if (Maps.isNotNullOrEmpty(muxEntry) && muxEntry.containsKey(pattern)) {
-				return muxEntry.get(pattern);
-			}
+		String key = buildKey(method, pattern);
+		MuxEntry entry = null;
+		if (this.entries.containsKey(key)) {
+			entry = this.entries.get(key);
+		} else {
+			entry = this.entries.get(pattern);
 		}
-		throw new NotFundException(Strings.concat("Not find handler with pattern: [", pattern, "]"));
+		if (Objects.nonNull(entry)) {
+			return entry.getHandler();
+		}
+		return null;
+	}
+
+	public static String buildKey(HttpMethod method, String pattern) {
+		return pattern + (Objects.isNull(method) ? "" : PATTERN_SEPARATOR + method.name());
 	}
 
 }
