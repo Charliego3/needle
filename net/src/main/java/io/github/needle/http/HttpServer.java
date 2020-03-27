@@ -32,8 +32,8 @@ public class HttpServer {
 
 	private static final AtomicBoolean                CLOSED = new AtomicBoolean(false);
 	private final        LinkedList<ShutdownListener> shutdownListeners;
-	private final        AtomicInteger                maxMethodLength;
 
+	private AtomicInteger         maxMethodLength;
 	private Mux                   mux;
 	private Map<String, MuxEntry> tempMuxHandler;
 	private AcceptListener        listener;
@@ -135,19 +135,12 @@ public class HttpServer {
 			address = new InetSocketAddress(host, port);
 		}
 		this.mux = Objs.nullDefault(mux, ServeMux.DEFAULT_MUX);
-//		this.tempMuxHandler.forEach((m, es) -> {
-//			es.forEach((p, h) -> this.mux.handle(m, p, h));
-//			int length = m.name().toCharArray().length;
-//			if (max.get() < length) {
-//				max.set(length);
-//			}
-//		});
 		this.tempMuxHandler.forEach((key, entry) -> {
 			this.mux.handle(entry.getMethod(), entry.getPattern(), entry.getHandler());
 		});
-		this.tempMuxHandler = null;
-		Logger.errorf("MaxHandler Method length: {}", maxMethodLength.get());
 		printHandler();
+		this.tempMuxHandler = null;
+		this.maxMethodLength = null;
 		Selector            selector     = Selector.open();
 		ServerSocketChannel serverSocket = selector.provider().openServerSocketChannel();
 		serverSocket.configureBlocking(false);
