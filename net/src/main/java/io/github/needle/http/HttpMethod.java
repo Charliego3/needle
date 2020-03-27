@@ -17,6 +17,8 @@ public enum HttpMethod {
 	OPTIONS,
 	TRACE,
 
+	ALL,
+
 	;
 
 	public static HttpMethod getInstance(String method) {
